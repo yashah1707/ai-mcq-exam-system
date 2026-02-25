@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install server deps
+        run: npm --prefix server ci
+
+      - name: Run server tests
+        run: npm --prefix server test
+
+      - name: Install client deps
+        run: npm --prefix client ci
+
+      - name: Build client
+        run: npm --prefix client run build
+
+      - name: Run smoke script (optional)
+        if: ${{ always() }}
+        run: |
+          # smoke script requires backend listening; skip if not configured
+          echo "Skip smoke run in CI by default"
