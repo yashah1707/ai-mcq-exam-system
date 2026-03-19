@@ -14,12 +14,17 @@ export default function ExamsPage() {
         const load = async () => {
             try {
                 const res = await fetchExams();
+                if (import.meta.env.DEV) {
+                    console.debug('[ExamsPage] fetched exams', res.exams || []);
+                }
                 const now = new Date();
                 const available = (res.exams || []).filter(e => {
                     const isActive = e.isActive;
-                    const notExpired = new Date(e.endDate) > now;
-                    const isAdaptive = e.title.startsWith('Adaptive Test');
-                    return isActive && notExpired && !isAdaptive;
+                    const isAdminCreated = e.createdBy?.role === 'admin';
+                    const startDate = new Date(e.startDate);
+                    const endDate = new Date(e.endDate);
+                    const withinWindow = !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime()) && startDate <= now && endDate >= now;
+                    return isActive && isAdminCreated && withinWindow;
                 });
                 setExams(available);
             } catch (err) {

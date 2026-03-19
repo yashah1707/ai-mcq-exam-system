@@ -30,15 +30,14 @@ const registerValidation = [
 
     body('password')
         .notEmpty().withMessage('Password is required')
-        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/).withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 
     body('role')
         .optional()
         .isIn(['student', 'admin']).withMessage('Role must be either student or admin'),
 
     body('enrollmentNo')
-        .notEmpty().withMessage('Enrollment number is required')
+        .optional()
         .trim()
         .isLength({ min: 3, max: 50 }).withMessage('Enrollment number must be between 3 and 50 characters')
         .matches(/^[A-Z0-9]+$/i).withMessage('Enrollment number must contain only letters and numbers'),
@@ -55,7 +54,8 @@ const loginValidation = [
         .notEmpty().withMessage('Enrollment number or email is required'),
 
     body('password')
-        .notEmpty().withMessage('Password is required'),
+        .notEmpty().withMessage('Password is required')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 
     validate
 ];

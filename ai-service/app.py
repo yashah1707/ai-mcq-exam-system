@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import os
 from logic.clustering import cluster_student
 from logic.trend_analysis import analyze_trend
 
@@ -27,6 +28,15 @@ def analyze_performance():
         topic_accuracy = data.get('topicAccuracy', {})
         avg_time = data.get('avgTimePerQuestion', 0)
 
+        # Input validation
+        if not isinstance(scores, list) or not all(isinstance(x, (int, float)) for x in scores):
+            return jsonify({"error": "Invalid recentScores; expected list of numbers."}), 400
+        if not isinstance(topic_accuracy, dict) or not all(isinstance(v, (int, float)) for v in topic_accuracy.values()):
+            return jsonify({"error": "Invalid topicAccuracy; expected object mapping to numeric accuracy."}), 400
+        try:
+            avg_time = float(avg_time)
+        except Exception:
+            avg_time = 0
         # 1. Clustering / Profile Analysis
         overall_accuracy = np.mean(scores) if scores else 0
         profile = cluster_student(overall_accuracy, avg_time)
@@ -61,6 +71,8 @@ def readiness_indicators():
         # { "topicAccuracy": {"DBMS": 60, "DSA": 80, ...} }
         
         topic_accuracy = data.get('topicAccuracy', {})
+        if not isinstance(topic_accuracy, dict):
+            return jsonify({"error": "Invalid topicAccuracy; expected object mapping."}), 400
         
         # Simple weighted readiness score (Mock weights)
         weights = {"DSA": 0.4, "DBMS": 0.3, "CN": 0.2, "OS": 0.1}
@@ -88,5 +100,18 @@ def readiness_indicators():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/metadata', methods=['GET'])
+def metadata():
+    return jsonify({
+        "service": "AI-MCQ-Exam-System",
+        "version": "0.1.0",
+        "features": ["analyze-performance", "readiness-indicators"],
+        "notes": "Model logic in logic/; add caching and model versioning in future"
+    })
+
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(
+        host=os.environ.get('HOST', '127.0.0.1'),
+        port=int(os.environ.get('PORT', 5001)),
+        debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
+    )

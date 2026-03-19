@@ -79,7 +79,17 @@ describe('API integration (auth, admin -> exam flow)', () => {
     const now = new Date();
     const start = new Date(now.getTime() - 60*1000).toISOString();
     const end = new Date(now.getTime() + 10*60*1000).toISOString();
-    const examPayload = { title: 'Test Exam', description: 'desc', duration: 5, totalMarks: 1, passingMarks: 1, questions: [qId], startDate: start, endDate: end };
+    const examPayload = {
+      title: 'Test Exam',
+      subject: 'Aptitude',
+      description: 'desc',
+      duration: 5,
+      totalMarks: 1,
+      passingMarks: 1,
+      questions: [qId],
+      startDate: start,
+      endDate: end
+    };
     const exRes = await request(app).post('/api/exams').set('Authorization', `Bearer ${adminToken}`).send(examPayload);
     expect(exRes.status).toBe(201);
     const exam = exRes.body.exam;

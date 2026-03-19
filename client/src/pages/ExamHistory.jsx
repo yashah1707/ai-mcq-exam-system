@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAttemptHistory } from '../services/examAttemptService';
 
 export default function ExamHistory() {
+  const navigate = useNavigate();
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,7 +54,7 @@ export default function ExamHistory() {
                     <td style={{ padding: '8px 6px' }}>
                       {isAdaptive && (
                         <button
-                          onClick={() => window.location.href = `/analysis/${a._id}`}
+                          onClick={() => navigate(`/analysis/${a._id}`)}
                           style={{ fontSize: '0.8rem', padding: '2px 6px', cursor: 'pointer' }}
                         >
                           Analysis

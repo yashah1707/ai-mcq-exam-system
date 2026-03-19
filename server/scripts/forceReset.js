@@ -1,4 +1,5 @@
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const connectDB = require('../src/config/db');
 const User = require('../src/models/user.model');
 const bcrypt = require('bcryptjs');

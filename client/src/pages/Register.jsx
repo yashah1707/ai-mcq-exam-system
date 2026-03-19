@@ -1,8 +1,10 @@
 import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Register() {
   const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,11 +32,11 @@ export default function Register() {
       // If token is returned (admin registration), go to dashboard
       // If no token (student registration), show success message and redirect to login
       if (response.token) {
-        window.location.href = '/dashboard';
+        navigate(response.user?.role === 'admin' ? '/admin/dashboard' : '/dashboard', { replace: true });
       } else {
         // Student registration - needs email verification
         alert(response.message || 'Registration successful! Please check your email to verify your account before logging in.');
-        window.location.href = '/login';
+        navigate('/login', { replace: true });
       }
     } catch (err) {
       setError(err?.response?.data?.message || err.message);
@@ -143,7 +145,7 @@ export default function Register() {
         </form>
 
         <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-          <p className="text-small" style={{ margin: 0 }}>Already have an account? <a href="/login" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Sign in here</a></p>
+          <p className="text-small" style={{ margin: 0 }}>Already have an account? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Sign in here</Link></p>
         </div>
       </div>
     </div>

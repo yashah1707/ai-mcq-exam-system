@@ -1,4 +1,9 @@
 const ExamAttempt = require('../models/examAttempt.model');
+const {
+  getStudentOverallReport,
+  getStudentSubjectHistoryReport,
+  getSubjectWiseStudentReport,
+} = require('../services/reporting.service');
 
 const getStudentPerformance = async (req, res, next) => {
   try {
@@ -67,4 +72,62 @@ const getExamStatistics = async (req, res, next) => {
   }
 };
 
-module.exports = { getStudentPerformance, getExamStatistics };
+const getSubjectStudentsReport = async (req, res, next) => {
+  try {
+    const { subject, startDate, endDate } = req.query;
+    if (!subject) {
+      res.status(400);
+      throw new Error('Subject is required');
+    }
+
+    const report = await getSubjectWiseStudentReport({ subject, startDate, endDate });
+    res.json({ success: true, data: report });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getStudentSubjectHistory = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { subject, startDate, endDate } = req.query;
+    if (!subject) {
+      res.status(400);
+      throw new Error('Subject is required');
+    }
+
+    const report = await getStudentSubjectHistoryReport({ userId, subject, startDate, endDate });
+    if (!report) {
+      res.status(404);
+      throw new Error('Student not found');
+    }
+
+    res.json({ success: true, data: report });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getStudentOverall = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { startDate, endDate } = req.query;
+    const report = await getStudentOverallReport({ userId, startDate, endDate });
+    if (!report) {
+      res.status(404);
+      throw new Error('Student not found');
+    }
+
+    res.json({ success: true, data: report });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getStudentPerformance,
+  getExamStatistics,
+  getSubjectStudentsReport,
+  getStudentSubjectHistory,
+  getStudentOverall,
+};

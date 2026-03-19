@@ -21,6 +21,7 @@ exports.analyzeAttempt = async (attemptId) => {
         const question = ans.questionId;
         if (!question) continue;
 
+        const subject = question.subject || ans.subject || 'Aptitude';
         const topic = question.topic || 'General';
         const isCorrect = ans.isCorrect;
         const timeSpent = ans.timeSpentSeconds || 0;
@@ -41,10 +42,13 @@ exports.analyzeAttempt = async (attemptId) => {
     // 1. Update Global TopicPerformance (PerformanceAnalytics)
     const topicUpdates = [];
     for (const [topic, stats] of Object.entries(topicStats)) {
-        let analytics = await PerformanceAnalytics.findOne({ userId, topic });
+        const sampleAnswer = answers.find(ans => (ans.questionId?.topic || 'General') === topic);
+        const subject = sampleAnswer?.questionId?.subject || sampleAnswer?.subject || 'Aptitude';
+
+        let analytics = await PerformanceAnalytics.findOne({ userId, subject, topic });
 
         if (!analytics) {
-            analytics = new PerformanceAnalytics({ userId, subject: 'Aptitude', topic }); // Default subject for now
+            analytics = new PerformanceAnalytics({ userId, subject, topic });
         }
 
         analytics.totalAttempts += stats.total;

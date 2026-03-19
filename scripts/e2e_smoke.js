@@ -1,8 +1,15 @@
 const fetch = global.fetch || require('node-fetch');
 const API = process.env.API_BASE || 'http://localhost:5000/api';
 
-const adminCreds = { email: 'admin@example.com', password: 'ChangeMe123!' };
+const adminCreds = {
+  email: process.env.ADMIN_EMAIL || 'admin@example.com',
+  password: process.env.ADMIN_PASSWORD || 'ChangeMe123!'
+};
 const studentCreds = { name: 'Smoke Student', email: `smoke+${Date.now()}@example.com`, password: 'password123' };
+const verifiedStudentCreds = {
+  email: process.env.STUDENT_EMAIL || 'student@example.com',
+  password: process.env.STUDENT_PASSWORD || 'ChangeMe123!'
+};
 
 async function req(path, opts = {}) {
   const res = await fetch(API + path, opts);
@@ -41,6 +48,7 @@ async function req(path, opts = {}) {
     const end = new Date(now.getTime() + 10*60*1000).toISOString();
     const examPayload = {
       title: 'Smoke Test Exam',
+      subject: 'Aptitude',
       description: 'Auto-generated exam for smoke test',
       duration: 5,
       totalMarks: 1,
@@ -57,13 +65,21 @@ async function req(path, opts = {}) {
     console.log('4) Register student');
     r = await req('/auth/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(studentCreds) });
     if (r.status !== 201) {
-      // maybe auto-registered disabled; attempt login
       console.log('Register returned', r.status, r.body);
-      const loginR = await req('/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: studentCreds.email, password: studentCreds.password }) });
-      if (loginR.status !== 200) throw new Error('Student register/login failed: ' + JSON.stringify(loginR));
-      r = loginR;
     }
-    const studentToken = r.body.token;
+
+    let studentToken = r.body && r.body.token;
+    if (!studentToken) {
+      console.log('-> registration requires email verification; using verified student account for protected flow');
+      const loginR = await req('/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(verifiedStudentCreds)
+      });
+      if (loginR.status !== 200) throw new Error('Verified student login failed: ' + JSON.stringify(loginR));
+      studentToken = loginR.body.token;
+    }
+
     console.log('-> student token ok');
 
     console.log('5) Start exam as student');

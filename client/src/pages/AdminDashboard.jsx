@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function AdminDashboard() {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   return (
     <div className="container">
       <div className="nav">
@@ -17,11 +19,11 @@ export default function AdminDashboard() {
         <h3>Welcome, {user?.name || 'Admin'}</h3>
         <p className="small">Manage exam system from here.</p>
         <div style={{ marginTop: 12 }}>
-          <a href="/admin/users"><button>Manage Users</button></a>
-          <a href="/admin/questions" style={{ marginLeft: 8 }}><button>Manage Questions</button></a>
-          <a href="/admin/exams" style={{ marginLeft: 8 }}><button>Manage Exams</button></a>
-          <a href="/admin/analytics" style={{ marginLeft: 8 }}><button style={{ backgroundColor: '#6366f1' }}>Batch Analytics 📊</button></a>
-          <a href="/admin/reports" style={{ marginLeft: 8 }}><button>View Reports</button></a>
+          <button onClick={() => navigate('/admin/users')}>Manage Users</button>
+          <button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/questions')}>Manage Questions</button>
+          <button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/exams')}>Manage Exams</button>
+          <button style={{ marginLeft: 8, backgroundColor: '#6366f1' }} onClick={() => navigate('/admin/analytics')}>Batch Analytics 📊</button>
+          <button style={{ marginLeft: 8 }} onClick={() => navigate('/admin/reports')}>View Reports</button>
         </div>
       </div>
     </div>

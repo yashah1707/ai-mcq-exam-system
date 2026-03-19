@@ -1,8 +1,14 @@
 const fetch = global.fetch; // Node 18+
 
 const BASE_URL = 'http://localhost:5000/api';
-const ADMIN = { email: 'admin@example.com', password: 'ChangeMe123!' };
-const STUDENT = { email: 'student@example.com', password: 'ChangeMe123!' };
+const ADMIN = {
+    email: process.env.ADMIN_EMAIL || 'admin@example.com',
+    password: process.env.ADMIN_PASSWORD || 'ChangeMe123!'
+};
+const STUDENT = {
+    email: process.env.STUDENT_EMAIL || 'student@example.com',
+    password: process.env.STUDENT_PASSWORD || 'ChangeMe123!'
+};
 
 async function req(method, url, token, body) {
     const headers = { 'Content-Type': 'application/json' };
@@ -39,39 +45,52 @@ async function runTest() {
     console.log('✅ Student Logged In');
 
     // 4. Start Adaptive Test
-    console.log('4️⃣ Starting Adaptive Test (DBMS)...');
-    const startTest = await req('POST', '/adaptive/start', studentToken, { subject: 'DBMS' });
-    if (startTest.status !== 200) {
-        console.warn('⚠️ Could not start DBMS test (maybe no questions?). Trying OS...');
-        // Try OS?
-    } else {
-        const attemptId = startTest.data.data.attemptId;
-        const question = startTest.data.data.question;
-        console.log(`✅ Test Started (ID: ${attemptId}). Q1: ${question.questionText.substring(0, 30)}...`);
+    console.log('4️⃣ Starting Adaptive Test...');
+    const subjectsToTry = ['DBMS', 'OS', 'Aptitude', 'Mixed'];
+    let startTest = null;
+    let selectedSubject = null;
 
-        // 5. Submit Answer
-        console.log('5️⃣ Submitting Answer...');
-        const submit = await req('POST', '/adaptive/submit', studentToken, {
-            attemptId,
-            questionId: question._id,
-            selectedOption: 0, // Just pick first option
-            timeSpent: 10
-        });
-        if (submit.status !== 200) throw new Error('Submit Answer Failed');
-        console.log('✅ Answer Submitted');
+    for (const subject of subjectsToTry) {
+        const response = await req('POST', '/adaptive/start', studentToken, { subject });
+        if ((response.status === 200 || response.status === 201) && response.data?.data?.attemptId && response.data?.data?.question) {
+            startTest = response;
+            selectedSubject = subject;
+            break;
+        }
 
-        // 6. End Test
-        console.log('6️⃣ Ending Test...');
-        const end = await req('POST', '/adaptive/end', studentToken, { attemptId });
-        if (end.status !== 200) throw new Error('End Test Failed');
-        console.log(`✅ Test Ended. Score: ${end.data.data.finalScore}`);
-
-        // 7. Check Analysis
-        console.log('7️⃣ Verifying Analysis Endpoint...');
-        const analysis = await req('GET', `/adaptive/attempt/${attemptId}`, studentToken);
-        if (analysis.status !== 200) throw new Error('Analysis Check Failed');
-        console.log('✅ Analysis Data Retrieved');
+        console.warn(`⚠️ Could not start ${subject} adaptive test: ${JSON.stringify(response.data)}`);
     }
+
+    if (!startTest) {
+        throw new Error('Adaptive test start failed for all fallback subjects');
+    }
+
+    const attemptId = startTest.data.data.attemptId;
+    const question = startTest.data.data.question;
+    console.log(`✅ Test Started for ${selectedSubject} (ID: ${attemptId}). Q1: ${question.questionText.substring(0, 30)}...`);
+
+    // 5. Submit Answer
+    console.log('5️⃣ Submitting Answer...');
+    const submit = await req('POST', '/adaptive/submit', studentToken, {
+        attemptId,
+        questionId: question._id,
+        selectedOption: 0,
+        timeSpent: 10
+    });
+    if (submit.status !== 200) throw new Error(`Submit Answer Failed: ${JSON.stringify(submit.data)}`);
+    console.log('✅ Answer Submitted');
+
+    // 6. End Test
+    console.log('6️⃣ Ending Test...');
+    const end = await req('POST', '/adaptive/end', studentToken, { attemptId });
+    if (end.status !== 200) throw new Error(`End Test Failed: ${JSON.stringify(end.data)}`);
+    console.log(`✅ Test Ended. Score: ${end.data.data.finalScore}`);
+
+    // 7. Check Analysis
+    console.log('7️⃣ Verifying Analysis Endpoint...');
+    const analysis = await req('GET', `/adaptive/attempt/${attemptId}`, studentToken);
+    if (analysis.status !== 200) throw new Error(`Analysis Check Failed: ${JSON.stringify(analysis.data)}`);
+    console.log('✅ Analysis Data Retrieved');
 
     console.log('\n✨ ALL SYSTEMS GO! Backend is fully operational.');
 }

@@ -25,6 +25,8 @@ const evaluateAnswers = async (exam, answers) => {
       unansweredCount++;
       evaluated.push({
         questionId: answer.questionId,
+        questionText: question.questionText,
+        options: question.options,
         selectedOption: null,
         correctAnswer: question.correctAnswer,
         isCorrect: false,
@@ -32,6 +34,8 @@ const evaluateAnswers = async (exam, answers) => {
         negativeMarks: question.negativeMarks,
         marksAwarded: 0,
         explanation: question.explanation,
+        difficulty: question.difficulty,
+        questionImageUrl: question.questionImageUrl,
         subject,
         topic,
         timeSpentSeconds: answer.timeSpentSeconds || 0
@@ -56,6 +60,8 @@ const evaluateAnswers = async (exam, answers) => {
 
     evaluated.push({
       questionId: answer.questionId,
+      questionText: question.questionText,
+      options: question.options,
       selectedOption: answer.selectedOption,
       correctAnswer: question.correctAnswer,
       isCorrect,
@@ -63,6 +69,8 @@ const evaluateAnswers = async (exam, answers) => {
       negativeMarks: question.negativeMarks,
       marksAwarded, // Can be positive, negative, or zero
       explanation: question.explanation,
+      difficulty: question.difficulty,
+      questionImageUrl: question.questionImageUrl,
       subject,
       topic,
       timeSpentSeconds: answer.timeSpentSeconds || 0
@@ -139,7 +147,7 @@ const startExam = async (req, res, next) => {
     const populatedAttempt = await ExamAttempt.findById(attempt._id)
       .populate({
         path: 'answers.questionId',
-        select: 'questionText options category difficulty marks subject topic'
+        select: 'questionText options category difficulty marks subject topic questionImageUrl'
       });
 
     res.status(201).json({ attempt: populatedAttempt });
@@ -159,14 +167,41 @@ const saveAnswer = async (req, res, next) => {
       throw new Error('Unauthorized');
     }
 
-    const answerIdx = attempt.answers.findIndex(a => a.questionId.toString() === questionId);
+    // Normalize incoming questionId which may be an object (populated) or a string
+    let qid = questionId;
+    try {
+      if (typeof questionId === 'object' && questionId !== null) {
+        qid = questionId._id ? questionId._id.toString() : questionId.toString();
+      } else {
+        qid = String(questionId);
+      }
+    } catch (e) {
+      qid = String(questionId);
+    }
+
+    const answerIdx = attempt.answers.findIndex(a => String(a.questionId) === qid);
+    const question = await Question.findById(qid).select('options');
+    if (!question) {
+      res.status(404);
+      throw new Error('Question not found');
+    }
+
+    let normalizedSelectedOption = selectedOption;
+    if (selectedOption !== null && selectedOption !== undefined) {
+      normalizedSelectedOption = Number(selectedOption);
+      if (!Number.isInteger(normalizedSelectedOption) || normalizedSelectedOption < 0 || normalizedSelectedOption >= question.options.length) {
+        res.status(400);
+        throw new Error(`Selected option must be between 0 and ${question.options.length - 1}`);
+      }
+    }
+
     if (answerIdx >= 0) {
-      attempt.answers[answerIdx].selectedOption = selectedOption;
+      attempt.answers[answerIdx].selectedOption = normalizedSelectedOption;
       if (timeSpentSeconds !== undefined) {
         attempt.answers[answerIdx].timeSpentSeconds = (attempt.answers[answerIdx].timeSpentSeconds || 0) + timeSpentSeconds;
       }
     } else {
-      attempt.answers.push({ questionId, selectedOption, timeSpentSeconds: timeSpentSeconds || 0 });
+      attempt.answers.push({ questionId, selectedOption: normalizedSelectedOption, timeSpentSeconds: timeSpentSeconds || 0 });
     }
 
     await attempt.save();
@@ -210,9 +245,15 @@ const submitExam = async (req, res, next) => {
     attempt.endTime = new Date();
     await attempt.save();
 
-    // Trigger asynchronous performance update (fire and forget or await if critical)
-    // We await it to ensure consistency for immediate Feedback
-    await PerformanceAnalyticsController.updatePerformanceMetrics(req.user._id, attempt._id);
+    // Trigger asynchronous performance update: enqueue a job so processing happens in background
+    const AnalyticsJob = require('../models/analyticsJob.model');
+    try {
+      await AnalyticsJob.create({ userId: req.user._id, attemptId: attempt._id, status: 'pending' });
+    } catch (e) {
+      console.error('Failed to enqueue analytics job:', e.message);
+      // fallback: run synchronously to avoid losing analytics update
+      await PerformanceAnalyticsController.updatePerformanceMetrics(req.user._id, attempt._id);
+    }
 
     const passed = score >= attempt.exam.passingMarks;
 
@@ -240,7 +281,7 @@ const getAttempt = async (req, res, next) => {
       .populate('user', 'name email')
       .populate({
         path: 'answers.questionId',
-        select: 'questionText options category difficulty marks subject topic'
+        select: 'questionText options category difficulty marks subject topic questionImageUrl'
       });
 
     if (!attempt || (attempt.user._id.toString() !== req.user._id.toString())) {

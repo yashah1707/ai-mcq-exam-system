@@ -22,6 +22,10 @@ const createExamValidation = [
         .notEmpty().withMessage('Exam title is required')
         .isLength({ min: 5, max: 200 }).withMessage('Title must be between 5 and 200 characters'),
 
+    body('subject')
+        .trim()
+        .notEmpty().withMessage('Subject is required'),
+
     body('description')
         .optional()
         .trim()
@@ -29,7 +33,7 @@ const createExamValidation = [
 
     body('duration')
         .notEmpty().withMessage('Duration is required')
-        .isInt({ min: 1, max: 300 }).withMessage('Duration must be between 1 and 300 minutes'),
+        .isInt({ min: 1, max: 180 }).withMessage('Duration must be between 1 and 180 minutes'),
 
     body('totalMarks')
         .notEmpty().withMessage('Total marks is required')
@@ -47,6 +51,9 @@ const createExamValidation = [
 
     body('questions')
         .isArray({ min: 1 }).withMessage('At least one question must be assigned to the exam'),
+
+    body('questions.*')
+        .isMongoId().withMessage('Each selected question must be a valid question ID'),
 
     body('startDate')
         .notEmpty().withMessage('Start date is required')
@@ -78,6 +85,11 @@ const updateExamValidation = [
         .trim()
         .isLength({ min: 5, max: 200 }).withMessage('Title must be between 5 and 200 characters'),
 
+    body('subject')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Subject is required'),
+
     body('description')
         .optional()
         .trim()
@@ -85,7 +97,7 @@ const updateExamValidation = [
 
     body('duration')
         .optional()
-        .isInt({ min: 1, max: 300 }).withMessage('Duration must be between 1 and 300 minutes'),
+        .isInt({ min: 1, max: 180 }).withMessage('Duration must be between 1 and 180 minutes'),
 
     body('totalMarks')
         .optional()
@@ -98,6 +110,10 @@ const updateExamValidation = [
     body('questions')
         .optional()
         .isArray({ min: 1 }).withMessage('At least one question must be assigned to the exam'),
+
+    body('questions.*')
+        .optional()
+        .isMongoId().withMessage('Each selected question must be a valid question ID'),
 
     body('startDate')
         .optional()
@@ -130,11 +146,10 @@ const startExamValidation = [
  */
 const saveAnswerValidation = [
     body('questionId')
-        .notEmpty().withMessage('Question ID is required')
-        .isMongoId().withMessage('Question ID must be a valid MongoDB ID'),
+        .notEmpty().withMessage('Question ID is required'),
 
     body('selectedOption')
-        .isInt({ min: 0, max: 3 }).withMessage('Selected option must be between 0 and 3')
+        .isInt({ min: 0 }).withMessage('Selected option must be a non-negative integer')
         .optional({ nullable: true }),
 
     validate

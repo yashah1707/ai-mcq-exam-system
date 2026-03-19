@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const examSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  subject: { type: String, required: true }, // 'DBMS', 'OS', 'Aptitude', 'Mixed', etc.
+  subject: { type: String, default: 'General' }, // 'DBMS', 'OS', 'Aptitude', 'Mixed', etc.
   description: { type: String, default: '' },
   duration: { type: Number, required: true },
   totalMarks: { type: Number, required: true },

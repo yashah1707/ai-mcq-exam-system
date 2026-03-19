@@ -72,14 +72,38 @@ const PlacementReadinessCard = ({ data }) => {
                         <div style={{ fontSize: '1.5rem' }}>{breakdown.coverage}%</div>
                     </div>
                 </div>
-
                 <h4>🤖 AI Insights</h4>
                 <ul style={{ marginTop: '0.5rem', paddingLeft: '1.2rem' }}>
-                    {insights.map((insight, idx) => (
+                    {insights && insights.map((insight, idx) => (
                         <li key={idx} style={{ marginBottom: '0.5rem', color: '#495057' }}>{insight}</li>
                     ))}
-                    {insights.length === 0 && <li>Keep taking more tests to get personalized insights!</li>}
+                    {(!insights || insights.length === 0) && <li>Keep taking more tests to get personalized insights!</li>}
                 </ul>
+
+                {data.actionPlan && data.actionPlan.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                        <h4>📝 Action Plan</h4>
+                        <ul style={{ paddingLeft: '1.2rem' }}>
+                            {data.actionPlan.map((a, i) => (
+                                <li key={i} style={{ marginBottom: '0.5rem' }}>{a}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {data.weakAreas && data.weakAreas.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                        <h4>🔍 Weak Areas</h4>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {data.weakAreas.map((w, idx) => (
+                                <div key={idx} style={{ background: '#fff5f5', padding: '0.6rem', borderRadius: '6px', border: '1px solid #ffd8d8' }}>
+                                    <div style={{ fontWeight: '600' }}>{w.topic}</div>
+                                    <div style={{ fontSize: '0.9rem', color: '#6b6b6b' }}>{w.subject} • {w.attempts} attempts • {w.accuracy}%</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

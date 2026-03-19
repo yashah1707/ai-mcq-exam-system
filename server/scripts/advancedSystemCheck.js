@@ -1,4 +1,5 @@
 const fetch = global.fetch;
+const path = require('path');
 
 const BASE_URL = 'http://localhost:5000/api';
 const AI_URL = 'http://localhost:5001';
@@ -46,7 +47,7 @@ async function runAdvancedCheck() {
         console.log('1️⃣.5️⃣ Verifying Email (Backend Bypass)...');
         try {
             // Script is in parent folder relative to this script
-            execSync(`node ../verify-user-cli.js "${newUser.email}"`, { stdio: 'inherit' });
+            execSync(`node "${path.join(__dirname, '../verify-user-cli.js')}" "${newUser.email}"`, { stdio: 'inherit' });
         } catch (e) {
             throw new Error('Verification Script Failed');
         }

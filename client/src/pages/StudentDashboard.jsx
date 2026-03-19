@@ -1,10 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import AnalyticsService from '../services/analyticsService';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function StudentDashboard() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [readiness, setReadiness] = useState(null);
   const [aiInsights, setAiInsights] = useState(null);
   const [subjectData, setSubjectData] = useState([]);
@@ -38,6 +40,8 @@ export default function StudentDashboard() {
     }
   };
 
+  const weakAreas = Array.isArray(aiInsights?.weak_areas) ? aiInsights.weak_areas : [];
+
   return (
     <div className="container" style={{ maxWidth: '1200px', padding: '0 24px', paddingBottom: '50px' }}>
       {/* Hero Section */}
@@ -64,7 +68,7 @@ export default function StudentDashboard() {
             <p style={{ opacity: 0.9, margin: 0 }}>AI-powered tests that adjust difficulty based on your performance.</p>
           </div>
           <button
-            onClick={() => window.location.href = '/adaptive-test'}
+            onClick={() => navigate('/adaptive-test')}
             style={{ padding: '0.8rem 1.5rem', backgroundColor: 'white', color: '#764ba2', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', flexShrink: 0 }}
           >
             Start Practice
@@ -132,11 +136,19 @@ export default function StudentDashboard() {
         <div className="card" style={{ borderLeft: '4px solid #ef4444' }}>
           <h3 style={{ marginTop: 0 }}>⚠️ Focus Areas</h3>
           {loading ? <p>Analyzing...</p> : (
-            aiInsights?.weak_areas?.length > 0 ? (
+            weakAreas.length > 0 ? (
               <ul style={{ paddingLeft: '20px' }}>
-                {aiInsights.weak_areas.map((topic, i) => (
-                  <li key={i} style={{ marginBottom: '4px', color: '#ef4444', fontWeight: '500' }}>{topic}</li>
-                ))}
+                {weakAreas.map((topic, i) => {
+                  const label = typeof topic === 'string'
+                    ? topic
+                    : `${topic.topic}${typeof topic.accuracy === 'number' ? ` (${topic.accuracy}% accuracy)` : ''}`;
+
+                  return (
+                    <li key={i} style={{ marginBottom: '4px', color: '#ef4444', fontWeight: '500' }}>
+                      {label}
+                    </li>
+                  );
+                })}
               </ul>
             ) : <p className="text-muted">No specific weak areas detected yet! Keep it up!</p>
           )}

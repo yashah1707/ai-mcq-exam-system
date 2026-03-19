@@ -1,5 +1,30 @@
 const { body, validationResult } = require('express-validator');
 
+const validateOptionsArray = (options) => {
+    if (!Array.isArray(options) || options.length < 2) {
+        throw new Error('Provide at least 2 options');
+    }
+
+    if (options.some(option => typeof option !== 'string' || option.trim().length === 0)) {
+        throw new Error('All options must be non-empty');
+    }
+
+    return true;
+};
+
+const validateCorrectAnswerIndex = (correctAnswer, options) => {
+    if (!Array.isArray(options) || !options.length) {
+        return true;
+    }
+
+    const numericAnswer = Number(correctAnswer);
+    if (!Number.isInteger(numericAnswer) || numericAnswer < 0 || numericAnswer >= options.length) {
+        throw new Error(`Correct answer must be between 0 and ${options.length - 1}`);
+    }
+
+    return true;
+};
+
 /**
  * Middleware to check validation results
  */
@@ -23,17 +48,12 @@ const createQuestionValidation = [
         .isLength({ min: 10, max: 1000 }).withMessage('Question text must be between 10 and 1000 characters'),
 
     body('options')
-        .isArray({ min: 4, max: 4 }).withMessage('Must provide exactly 4 options')
-        .custom((options) => {
-            if (options.some(opt => !opt || opt.trim().length === 0)) {
-                throw new Error('All options must be non-empty');
-            }
-            return true;
-        }),
+        .custom(validateOptionsArray),
 
     body('correctAnswer')
         .notEmpty().withMessage('Correct answer is required')
-        .isInt({ min: 0, max: 3 }).withMessage('Correct answer must be between 0 and 3'),
+        .isInt({ min: 0 }).withMessage('Correct answer must be a non-negative integer')
+        .custom((value, { req }) => validateCorrectAnswerIndex(value, req.body.options)),
 
     body('category')
         .notEmpty().withMessage('Category is required')
@@ -50,6 +70,16 @@ const createQuestionValidation = [
     body('negativeMarks')
         .optional()
         .isFloat({ min: 0, max: 100 }).withMessage('Negative marks must be between 0 and 100'),
+
+    body('questionImageUrl')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isURL().withMessage('Question image must be a valid URL'),
+
+    body('questionImagePublicId')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ max: 200 }).withMessage('Question image identifier is too long'),
 
     body('explanation')
         .optional()
@@ -70,17 +100,12 @@ const updateQuestionValidation = [
 
     body('options')
         .optional()
-        .isArray({ min: 4, max: 4 }).withMessage('Must provide exactly 4 options')
-        .custom((options) => {
-            if (options && options.some(opt => !opt || opt.trim().length === 0)) {
-                throw new Error('All options must be non-empty');
-            }
-            return true;
-        }),
+        .custom(validateOptionsArray),
 
     body('correctAnswer')
         .optional()
-        .isInt({ min: 0, max: 3 }).withMessage('Correct answer must be between 0 and 3'),
+        .isInt({ min: 0 }).withMessage('Correct answer must be a non-negative integer')
+        .custom((value, { req }) => validateCorrectAnswerIndex(value, req.body.options)),
 
     body('category')
         .optional()
@@ -97,6 +122,16 @@ const updateQuestionValidation = [
     body('negativeMarks')
         .optional()
         .isFloat({ min: 0, max: 100 }).withMessage('Negative marks must be between 0 and 100'),
+
+    body('questionImageUrl')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isURL().withMessage('Question image must be a valid URL'),
+
+    body('questionImagePublicId')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ max: 200 }).withMessage('Question image identifier is too long'),
 
     body('explanation')
         .optional()
@@ -119,11 +154,11 @@ const bulkCreateQuestionsValidation = [
         .isLength({ min: 10, max: 1000 }).withMessage('Question text must be between 10 and 1000 characters'),
 
     body('*.options')
-        .isArray({ min: 4, max: 4 }).withMessage('Each question must have exactly 4 options'),
+        .custom(validateOptionsArray),
 
     body('*.correctAnswer')
         .notEmpty().withMessage('Each question must have a correct answer')
-        .isInt({ min: 0, max: 3 }).withMessage('Correct answer must be between 0 and 3'),
+        .isInt({ min: 0 }).withMessage('Correct answer must be a non-negative integer'),
 
     body('*.category')
         .notEmpty().withMessage('Each question must have a category')
@@ -132,6 +167,27 @@ const bulkCreateQuestionsValidation = [
     body('*.difficulty')
         .notEmpty().withMessage('Each question must have a difficulty')
         .isIn(['Easy', 'Medium', 'Hard']).withMessage('Difficulty must be Easy, Medium, or Hard'),
+
+    body()
+        .custom((questions) => {
+            questions.forEach((question, index) => {
+                try {
+                    validateCorrectAnswerIndex(question.correctAnswer, question.options);
+                } catch (error) {
+                    throw new Error(`Question ${index + 1}: ${error.message}`);
+                }
+
+                if (question.marks !== undefined && (!Number.isInteger(Number(question.marks)) || Number(question.marks) < 1 || Number(question.marks) > 100)) {
+                    throw new Error(`Question ${index + 1}: marks must be between 1 and 100`);
+                }
+
+                if (question.questionImageUrl !== undefined && question.questionImageUrl !== '' && !/^https?:\/\//i.test(String(question.questionImageUrl))) {
+                    throw new Error(`Question ${index + 1}: question image must be a valid URL`);
+                }
+            });
+
+            return true;
+        }),
 
     validate
 ];

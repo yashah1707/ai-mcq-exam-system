@@ -1,9 +1,11 @@
 import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 
 export default function Login() {
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -20,9 +22,9 @@ export default function Login() {
 
       // Redirect based on role
       if (data.user?.role === 'admin') {
-        window.location.href = '/admin/dashboard';
+        navigate('/admin/dashboard', { replace: true });
       } else {
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
       }
     } catch (err) {
       const errorMsg = err?.response?.data?.message || err.message;
@@ -127,7 +129,7 @@ export default function Login() {
 
         <div style={{ marginTop: '16px', textAlign: 'center' }}>
           <span className="text-muted">Don't have an account? </span>
-          <a href="/register" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Sign up here</a>
+          <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Sign up here</Link>
         </div>
       </div>
     </div>

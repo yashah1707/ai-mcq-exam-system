@@ -72,7 +72,8 @@ exports.startAdaptiveTest = async (req, res) => {
                     questionText: q.questionText,
                     options: q.options,
                     marks: q.marks,
-                    difficulty: q.difficulty
+                    difficulty: q.difficulty,
+                    questionImageUrl: q.questionImageUrl || ''
                 };
             }
         }
@@ -82,6 +83,9 @@ exports.startAdaptiveTest = async (req, res) => {
             data: {
                 examId: exam._id,
                 attemptId: attempt._id,
+                title: exam.title,
+                duration: exam.duration,
+                startedAt: attempt.startTime,
                 message: 'Adaptive test generated successfully',
                 question: firstQuestionData,
                 currentQuestionNumber: 1,
@@ -232,7 +236,8 @@ exports.submitAdaptiveAnswer = async (req, res) => {
                         questionText: nextQuestion.questionText,
                         options: nextQuestion.options,
                         marks: nextQuestion.marks,
-                        difficulty: nextQuestion.difficulty
+                        difficulty: nextQuestion.difficulty,
+                        questionImageUrl: nextQuestion.questionImageUrl || ''
                     }
                 }
             });
@@ -331,7 +336,8 @@ exports.getAttemptAnalysis = async (req, res) => {
                 selectedOption: ans.selectedOption,
                 isCorrect: ans.isCorrect,
                 explanation: ans.questionId.explanation,
-                difficulty: ans.questionId.difficulty
+                difficulty: ans.questionId.difficulty,
+                questionImageUrl: ans.questionId.questionImageUrl || ''
             }))
         };
 

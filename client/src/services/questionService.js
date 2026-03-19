@@ -1,6 +1,17 @@
 import api from './api';
 
 export const createQuestion = (payload) => api.post('/questions', payload).then(r => r.data);
+export const uploadQuestionImage = (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  return api.post('/questions/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then(r => r.data);
+};
+export const deleteQuestionImage = (publicId) => api.post('/questions/delete-image', { publicId }).then(r => r.data);
 export const fetchQuestions = (category, difficulty) => {
   const params = new URLSearchParams();
   if (category) params.append('category', category);

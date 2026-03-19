@@ -56,11 +56,20 @@ cd client
 npm run dev
 ```
 
-### 3. Docker Run
-```bash
-docker-compose up --build
-```
-Access the app at `http://localhost:3000`.
+### 3. Run the stack locally
+Follow the instructions in `DEV_SETUP.md` for local development commands (no Docker).
 
 ## 🧠 AI & Logic Explained
 See [VIVA_EXPLANATION.md](./VIVA_EXPLANATION.md) for detailed architecture and adaptivity logic usage.
+
+## 🖼 Question Image Uploads
+
+Question image uploads use Cloudinary.
+
+Set these variables in `server/.env` before using image upload from the admin question forms:
+
+```bash
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```

@@ -40,7 +40,7 @@ const TEMPLATES = {
     'OS': [
         { t: "Which scheduling algorithm typically has the best ${metric}?", v: [['Response Time', 'Round Robin'], ['Throughput', 'SJF'], ['Fairness', 'Round Robin'], ['Turnaround Time', 'SJF']], d: 'Medium' },
         { t: "A situation where processes wait indefinitely for each other is called:", v: [['Deadlock', 'Deadlock']], d: 'Easy' },
-        { t: "Which is NOT a necessary condition for Deadlock?", v: [['Preemption', 'Preemption (No Preemption is required)'], ['Mutual Exclusion', 'Starvation'], ['Hold and Wait', 'Aging']], d: 'Medium' }, // Trick
+        { t: "Which of the following is NOT a necessary condition for deadlock?", v: [['Mutual Exclusion', 'Mutual Exclusion'], ['Hold and Wait', 'Hold and Wait'], ['No Preemption', 'No Preemption'], ['Circular Wait', 'Circular Wait'], ['Preemption', 'Preemption']], d: 'Medium' },
         { t: "Virtual memory is implemented using:", v: [['Paging', 'Paging/Segmentation'], ['Threading', 'Paging'], ['Semaphores', 'Paging']], d: 'Easy' },
         { t: "${algo} page replacement algorithm replaces the page that:", v: [['LRU', 'was used least recently'], ['FIFO', 'arrived first'], ['Optimal', 'will not be used for longest time']], d: 'Medium' }
     ],
@@ -54,8 +54,8 @@ const TEMPLATES = {
     'DSA': [
         { t: "The time complexity of ${op} in a ${struct} is:", v: [['Search', 'BST (Average)', 'O(log n)'], ['Insert', 'Hash Table (Average)', 'O(1)'], ['Access', 'Array', 'O(1)'], ['Search', 'Linked List', 'O(n)']], d: 'Medium' },
         { t: "Which data structure follows ${order}?", v: [['LIFO', 'Stack'], ['FIFO', 'Queue'], ['Priority', 'Heap']], d: 'Easy' },
-        { t: "Which sorting algorithm has a worst-case time complexity of ${comp}?", v: [['O(n^2)', 'Quick Sort'], ['O(n log n)', 'Merge Sort'], ['O(n^2)', 'Bubble Sort']], d: 'Medium' },
-        { t: "Traversing a tree in ${order} order visits root first.", v: [['Pre-order', 'Pre-order'], ['In-order', 'Pre-order (False)'], ['Post-order', 'Post-order (False)']], d: 'Easy' }
+        { t: "The worst-case time complexity of ${algo} is:", v: [['Quick Sort', 'O(n^2)'], ['Merge Sort', 'O(n log n)'], ['Bubble Sort', 'O(n^2)']], d: 'Medium' },
+        { t: "Which tree traversal visits the root node first?", v: [['Pre-order', 'Pre-order'], ['In-order', 'In-order'], ['Post-order', 'Post-order']], d: 'Easy' }
     ],
     'Aptitude': [
         { type: 'math', t: "If A can do a work in ${a} days and B in ${b} days, together they take:", f: (a, b) => ((a * b) / (a + b)).toFixed(2) + ' days', vals: [[10, 15], [20, 30], [12, 24], [6, 12]], d: 'Medium' },
@@ -160,7 +160,10 @@ async function generateQuestionsForSubject(subject, adminId) {
     }
 
     // 2. Fill the rest with Procedural Generation
-    while (questions.length < TOTAL_PER_SUBJECT) {
+    let variantCounter = 0;
+    let loopGuard = 0;
+    while (questions.length < TOTAL_PER_SUBJECT && loopGuard < 500) {
+        loopGuard++;
         // Pick a difficulty that needs filling
         let targetDiff = null;
         if (counts['Easy'] > 0) targetDiff = 'Easy';
@@ -169,26 +172,46 @@ async function generateQuestionsForSubject(subject, adminId) {
         else break; // Done
 
         const topic = getRandomItem(topics);
-
-        // Generate a variant
-        const seed = Math.floor(Math.random() * 10000);
-        const qType = getRandomInt(0, 2);
+        variantCounter++;
 
         let text, opts, correct, exp;
 
         if (subject === 'Aptitude' || subject === 'Logical') {
             const num1 = getRandomInt(10, 100);
             const num2 = getRandomInt(10, 100);
-            const ans = num1 + num2;
-            text = `What is ${num1} + ${num2}? (Logical Filler ${seed})`;
+            const ops = [
+                { sym: '+', fn: (a,b) => a+b, word: 'sum' },
+                { sym: '-', fn: (a,b) => Math.abs(a-b), word: 'difference' },
+                { sym: '×', fn: (a,b) => a*b, word: 'product' }
+            ];
+            const op = getRandomItem(ops);
+            const ans = op.fn(num1, num2);
+            text = `What is the ${op.word} of ${num1} and ${num2}?`;
             correct = `${ans}`;
-            opts = [`${ans}`, `${ans + 10}`, `${ans - 5}`, `${ans + 2}`];
-            exp = `${num1} + ${num2} = ${ans}`;
+            opts = [`${ans}`, `${ans + getRandomInt(1,15)}`, `${ans - getRandomInt(1,10)}`, `${ans + getRandomInt(16,30)}`];
+            exp = `${num1} ${op.sym} ${num2} = ${ans}.`;
         } else {
-            text = `Question regarding ${topic} concept #${seed} in ${subject}?`;
-            correct = `Correct Statement about ${topic}`;
-            opts = [correct, `False statement 1`, `False statement 2`, `Irrelevant statement`];
-            exp = `This focuses on the core principle of ${topic}.`;
+            const realTemplates = [
+                `Which of the following best describes ${topic} in ${subject}? (Variant ${variantCounter})`,
+                `What is the primary purpose of ${topic} in ${subject}? (Variant ${variantCounter})`,
+                `How does ${topic} improve system design in ${subject}? (Variant ${variantCounter})`,
+                `Which statement about ${topic} in ${subject} is correct? (Variant ${variantCounter})`,
+                `What problem does ${topic} solve in ${subject}? (Variant ${variantCounter})`,
+                `When should ${topic} be used in ${subject} systems? (Variant ${variantCounter})`,
+                `What is a key characteristic of ${topic} in ${subject}? (Variant ${variantCounter})`,
+                `Why is ${topic} important in ${subject}? (Variant ${variantCounter})`,
+                `Which of these is a valid use case for ${topic} in ${subject}? (Variant ${variantCounter})`,
+                `What happens when ${topic} is not properly implemented in ${subject}? (Variant ${variantCounter})`
+            ];
+            text = getRandomItem(realTemplates);
+            correct = `It ensures correctness, performance, and reliability in ${topic}-based systems.`;
+            opts = [
+                correct,
+                `It has no practical impact on ${subject} applications.`,
+                `It is only relevant to legacy ${subject} systems from the 1990s.`,
+                `It deliberately reduces the efficiency of ${subject} operations.`
+            ];
+            exp = `${topic} is a fundamental concept in ${subject} that directly impacts system quality.`;
         }
 
         addQ(text, opts, 0, targetDiff, topic, exp);
@@ -222,28 +245,11 @@ async function seedLarge() {
             console.log(`\nGenerating content for: ${subject}...`);
             const questions = await generateQuestionsForSubject(subject, admin._id);
 
-            // Batch Insert
             try {
-                // Check duplicates before inserting to be safe (though logic handles it)
-                // We rely on 'insertMany' ordered: false to continue if some fail, 
-                // but checking hash is better. For now, just insert.
-                // Actually, let's delete existing questions for this subject to ensure clean slate?
-                // "Prevent duplicate insertion (check subject + questionText hash)"
-                // Simpler: Check if count < 100, only add if needed?
-                // User said "Running seed twice should NOT duplicate data".
-
-                let insertedCount = 0;
-                for (const q of questions) {
-                    const exists = await Question.findOne({ subject: q.subject, questionText: q.questionText });
-                    if (!exists) {
-                        await Question.create(q);
-                        insertedCount++;
-                    }
-                }
-
-                console.log(`   -> Safety Inserted ${insertedCount} questions for ${subject}.`);
-                totalInserted += insertedCount;
-
+                await Question.deleteMany({ subject });
+                const result = await Question.insertMany(questions);
+                console.log(`   -> Inserted ${result.length} questions for ${subject}.`);
+                totalInserted += result.length;
             } catch (err) {
                 console.error(`Error inserting ${subject}:`, err.message);
             }

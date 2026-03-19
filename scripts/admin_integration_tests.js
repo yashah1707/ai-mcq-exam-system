@@ -1,6 +1,11 @@
 const fetch = global.fetch || require('node-fetch');
 const API = process.env.API_BASE || 'http://localhost:5000/api';
 
+const admin = {
+  email: process.env.ADMIN_EMAIL || 'admin@example.com',
+  password: process.env.ADMIN_PASSWORD || 'ChangeMe123!'
+};
+
 async function req(path, opts = {}) {
   const res = await fetch(API + path, opts);
   const text = await res.text();
@@ -12,7 +17,6 @@ async function req(path, opts = {}) {
 (async () => {
   try {
     console.log('Admin login');
-    const admin = { email: 'admin@example.com', password: 'ChangeMe123!' };
     let r = await req('/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(admin) });
     if (r.status !== 200) throw new Error('Admin login failed: ' + JSON.stringify(r));
     const token = r.body.token;
@@ -34,7 +38,17 @@ async function req(path, opts = {}) {
     const now = new Date();
     const start = new Date(now.getTime() - 60*1000).toISOString();
     const end = new Date(now.getTime() + 10*60*1000).toISOString();
-    const examPayload = { title: 'Bulk Exam', description: 'Exam from bulk upload', duration: 10, totalMarks: qIds.length, passingMarks: qIds.length, questions: qIds, startDate: start, endDate: end };
+    const examPayload = {
+      title: 'Bulk Exam',
+      subject: 'Aptitude',
+      description: 'Exam from bulk upload',
+      duration: 10,
+      totalMarks: qIds.length,
+      passingMarks: qIds.length,
+      questions: qIds,
+      startDate: start,
+      endDate: end
+    };
     r = await req('/exams', { method:'POST', headers:{'Content-Type':'application/json', 'Authorization': `Bearer ${token}`}, body: JSON.stringify(examPayload) });
     if (r.status !== 201) throw new Error('Create exam failed: ' + JSON.stringify(r));
     console.log('Exam created:', r.body.exam._id);
