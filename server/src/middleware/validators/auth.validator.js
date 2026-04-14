@@ -1,5 +1,4 @@
 const { body, validationResult } = require('express-validator');
-const { SUBJECT_OPTIONS } = require('../../utils/subjects');
 
 /**
  * Middleware to check validation results
@@ -99,7 +98,7 @@ const registerValidation = [
 
     body('subjects.*')
         .optional()
-        .isIn(SUBJECT_OPTIONS).withMessage('Each subject must be valid'),
+        .isString().withMessage('Each subject must be valid'),
 
     body(['batch', 'class'])
         .optional({ values: 'falsy' })

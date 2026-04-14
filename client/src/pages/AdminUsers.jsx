@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { bulkCreateUsers, createUserAccount, fetchUsers, sendUserPasswordLink, updateRole, updateUserDetails, toggleStatus } from '../services/userService';
 import { fetchClasses } from '../services/classService';
+import { fetchSubjects } from '../services/subjectService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { downloadCsv } from '../utils/csvExport';
 import { showToast } from '../utils/appEvents';
 
 const MAX_BULK_USERS = 500;
-const SUBJECT_OPTIONS = ['DBMS', 'OS', 'CN', 'DSA', 'Aptitude', 'Logical', 'Verbal'];
 const CREATE_ROLE_OPTIONS = [
   {
     value: 'student',
@@ -49,15 +49,15 @@ const USER_LIST_TABS = [
   { value: 'admin', label: 'Admins' },
 ];
 
-const parseSubjectsInput = (value) => Array.from(new Set(String(value || '')
+const parseSubjectsInput = (value, allowedSubjects = []) => Array.from(new Set(String(value || '')
   .split(',')
   .map((subject) => subject.trim())
-  .filter((subject) => SUBJECT_OPTIONS.includes(subject))));
+  .filter((subject) => !allowedSubjects.length || allowedSubjects.includes(subject))));
 
-const normalizeSubjects = (subjects) => Array.from(new Set(
-  (Array.isArray(subjects) ? subjects : parseSubjectsInput(subjects))
+const normalizeSubjects = (subjects, allowedSubjects = []) => Array.from(new Set(
+  (Array.isArray(subjects) ? subjects : parseSubjectsInput(subjects, allowedSubjects))
     .map((subject) => String(subject || '').trim())
-    .filter((subject) => SUBJECT_OPTIONS.includes(subject))
+    .filter((subject) => !allowedSubjects.length || allowedSubjects.includes(subject))
 ));
 
 const formatSubjectsInput = (subjects) => Array.isArray(subjects) ? subjects.join(', ') : '';
@@ -151,7 +151,7 @@ export default function AdminUsers(){
     employeeId: '',
     department: '',
     subjects: [],
-    subjectToAdd: SUBJECT_OPTIONS[0],
+    subjectToAdd: '',
     assignedClasses: [],
     assignedLabBatches: [],
     classToAdd: '',
@@ -159,6 +159,7 @@ export default function AdminUsers(){
     sendInvite: false,
   });
   const [users, setUsers] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [classCatalog, setClassCatalog] = useState([]);
   const [classOptions, setClassOptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -183,10 +184,11 @@ export default function AdminUsers(){
   const load = async () => {
     setError(null);
     try{
-      const [userResponse, classResponse] = await Promise.all([fetchUsers(), fetchClasses()]);
+      const [userResponse, classResponse, subjectResponse] = await Promise.all([fetchUsers(), fetchClasses(), fetchSubjects({ includeInactive: false })]);
       setUsers(userResponse.users || []);
       setClassCatalog(classResponse.classes || []);
       setClassOptions((classResponse.classes || []).map((academicClass) => academicClass.name));
+      setSubjectOptions((subjectResponse.subjectOptions || []).map((subject) => subject.code || subject));
     }catch(err){
       setError(err?.response?.data?.message || err.message);
     }finally{setLoading(false)}
@@ -206,7 +208,8 @@ export default function AdminUsers(){
   const activeCreateRole = getRoleOption(form.role);
   const activeBulkRole = getBulkRoleOption(bulkForm.role);
   const createIdentifierConfig = getIdentifierConfig(form.role);
-  const availableCreateSubjects = SUBJECT_OPTIONS.filter((subject) => !form.subjects.includes(subject));
+  const defaultSubjectOption = subjectOptions[0] || '';
+  const availableCreateSubjects = subjectOptions.filter((subject) => !form.subjects.includes(subject));
   const availableCreateClasses = classOptions.filter((className) => !form.assignedClasses.includes(className));
   const labBatchOptions = classCatalog.flatMap((academicClass) => (academicClass.labBatches || []).map((labBatch) => ({
     className: academicClass.name,
@@ -244,6 +247,20 @@ export default function AdminUsers(){
   }, [availableCreateLabBatches]);
 
   useEffect(() => {
+    setForm((current) => {
+      if (current.role !== 'teacher') {
+        return current;
+      }
+
+      const nextSubjectToAdd = availableCreateSubjects.includes(current.subjectToAdd)
+        ? current.subjectToAdd
+        : (availableCreateSubjects[0] || '');
+
+      return nextSubjectToAdd === current.subjectToAdd ? current : { ...current, subjectToAdd: nextSubjectToAdd };
+    });
+  }, [availableCreateSubjects]);
+
+  useEffect(() => {
     setEditForm((current) => {
       if (!current || current.role !== 'teacher') {
         return current;
@@ -276,7 +293,7 @@ export default function AdminUsers(){
       employeeId: role === 'teacher' ? current.employeeId : '',
       department: role === 'teacher' ? current.department : '',
       subjects: role === 'teacher' ? current.subjects : [],
-      subjectToAdd: role === 'teacher' ? current.subjectToAdd : SUBJECT_OPTIONS[0],
+      subjectToAdd: role === 'teacher' ? current.subjectToAdd : defaultSubjectOption,
       assignedClasses: role === 'teacher' ? current.assignedClasses : [],
       assignedLabBatches: role === 'teacher' ? current.assignedLabBatches : [],
       classToAdd: role === 'teacher' ? current.classToAdd : '',
@@ -316,7 +333,7 @@ export default function AdminUsers(){
           employeeId: value === 'teacher' ? current.employeeId : '',
           department: value === 'teacher' ? current.department : '',
           subjects: value === 'teacher' ? current.subjects : [],
-          subjectToAdd: value === 'teacher' ? current.subjectToAdd : SUBJECT_OPTIONS[0],
+          subjectToAdd: value === 'teacher' ? current.subjectToAdd : defaultSubjectOption,
           assignedClasses: value === 'teacher' ? current.assignedClasses : [],
           assignedLabBatches: value === 'teacher' ? current.assignedLabBatches : [],
           classToAdd: value === 'teacher' ? current.classToAdd : '',
@@ -336,7 +353,7 @@ export default function AdminUsers(){
     setForm((current) => ({
       ...current,
       subjects: normalizeSubjects([...current.subjects, current.subjectToAdd]),
-      subjectToAdd: SUBJECT_OPTIONS.find((subject) => !current.subjects.includes(subject) && subject !== current.subjectToAdd) || current.subjectToAdd,
+      subjectToAdd: subjectOptions.find((subject) => !current.subjects.includes(subject) && subject !== current.subjectToAdd) || current.subjectToAdd,
     }));
   };
 
@@ -356,7 +373,7 @@ export default function AdminUsers(){
     setEditForm((current) => ({
       ...current,
       subjects: normalizeSubjects([...current.subjects, current.subjectToAdd]),
-      subjectToAdd: SUBJECT_OPTIONS.find((subject) => !current.subjects.includes(subject) && subject !== current.subjectToAdd) || current.subjectToAdd,
+      subjectToAdd: subjectOptions.find((subject) => !current.subjects.includes(subject) && subject !== current.subjectToAdd) || current.subjectToAdd,
     }));
   };
 
@@ -510,7 +527,7 @@ export default function AdminUsers(){
         sendInvite: form.sendInvite,
       });
       showToast(response.message || 'Account created successfully.', { type: 'success' });
-      setForm((current) => ({ ...current, firstName: '', lastName: '', email: '', enrollmentNo: '', adminId: '', password: '', batch: '', employeeId: '', department: '', subjects: [], subjectToAdd: SUBJECT_OPTIONS[0], assignedClasses: [], assignedLabBatches: [], classToAdd: '', labBatchToAdd: '', sendInvite: false }));
+      setForm((current) => ({ ...current, firstName: '', lastName: '', email: '', enrollmentNo: '', adminId: '', password: '', batch: '', employeeId: '', department: '', subjects: [], subjectToAdd: defaultSubjectOption, assignedClasses: [], assignedLabBatches: [], classToAdd: '', labBatchToAdd: '', sendInvite: false }));
       await load();
     } catch (err) {
       const message = err?.response?.data?.message || err.message;
@@ -663,7 +680,7 @@ export default function AdminUsers(){
       employeeId: user.employeeId || '',
       department: user.department || '',
       subjects: normalizeSubjects(user.subjects),
-      subjectToAdd: SUBJECT_OPTIONS.find((subject) => !normalizeSubjects(user.subjects).includes(subject)) || SUBJECT_OPTIONS[0],
+      subjectToAdd: subjectOptions.find((subject) => !normalizeSubjects(user.subjects, subjectOptions).includes(subject)) || defaultSubjectOption,
       assignedClasses: normalizedAssignedClasses,
       assignedLabBatches: normalizedAssignedLabBatches,
       classToAdd: availableEditClasses[0] || '',
@@ -1262,7 +1279,7 @@ export default function AdminUsers(){
               {editForm.role === 'teacher' && (
                 <>
                   {(() => {
-                    const availableEditSubjects = SUBJECT_OPTIONS.filter((subject) => !editForm.subjects.includes(subject));
+                    const availableEditSubjects = subjectOptions.filter((subject) => !editForm.subjects.includes(subject));
                     return (
                       <>
                   <div className="form-group">

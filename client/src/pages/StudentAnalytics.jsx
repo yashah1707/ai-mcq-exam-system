@@ -9,6 +9,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
+import { fetchStudentSubjectScope } from '../services/subjectService';
 
 export default function StudentAnalytics() {
     const { user } = useContext(AuthContext);
@@ -21,7 +22,8 @@ export default function StudentAnalytics() {
     const [subjectProficiency, setSubjectProficiency] = useState(null);
     const [aiInsights, setAiInsights] = useState(null);
     const [overallReport, setOverallReport] = useState(null);
-    const [selectedSubject, setSelectedSubject] = useState('DBMS');
+    const [selectedSubject, setSelectedSubject] = useState('');
+    const [subjectOptions, setSubjectOptions] = useState([]);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [subjectHistory, setSubjectHistory] = useState(null);
@@ -31,7 +33,22 @@ export default function StudentAnalytics() {
         questionsAttempted: 0
     });
 
-    const SUBJECT_OPTIONS = ['DBMS', 'OS', 'CN', 'DSA', 'Aptitude', 'Logical', 'Verbal'];
+    useEffect(() => {
+        const loadSubjectScope = async () => {
+            try {
+                const response = await fetchStudentSubjectScope();
+                const nextSubjectOptions = (response.subjectOptions || []).map((subject) => subject.code || subject);
+                setSubjectOptions(nextSubjectOptions);
+                setSelectedSubject((currentSubject) => currentSubject && nextSubjectOptions.includes(currentSubject)
+                    ? currentSubject
+                    : (nextSubjectOptions[0] || ''));
+            } catch (scopeError) {
+                console.error('Failed to load subject scope', scopeError);
+            }
+        };
+
+        loadSubjectScope();
+    }, []);
 
     useEffect(() => {
         fetchAnalytics();
@@ -268,7 +285,7 @@ export default function StudentAnalytics() {
                     </div>
                     <div className="report-inline-controls">
                         <select value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)}>
-                            {SUBJECT_OPTIONS.map((subject) => (
+                            {subjectOptions.map((subject) => (
                                 <option key={subject} value={subject}>{subject}</option>
                             ))}
                         </select>

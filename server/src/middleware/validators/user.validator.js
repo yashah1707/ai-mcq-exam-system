@@ -1,5 +1,4 @@
 const { body, validationResult } = require('express-validator');
-const { SUBJECT_OPTIONS } = require('../../utils/subjects');
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -67,7 +66,7 @@ const bulkCreateUsersValidation = [
 
   body('users.*.subjects.*')
     .optional()
-    .isIn(SUBJECT_OPTIONS).withMessage('Each subject must be valid'),
+    .isString().withMessage('Each subject must be valid'),
 
   body(['users.*.batch', 'users.*.class'])
     .optional({ values: 'falsy' })

@@ -39,6 +39,7 @@ export default function Header() {
               <NavLink text="Dashboard" path="/admin/dashboard" isActive={isActive('/admin/dashboard')} onClick={() => navigate('/admin/dashboard')} />
               <NavLink text="Users" path="/admin/users" isActive={isActive('/admin/users')} onClick={() => navigate('/admin/users')} />
               <NavLink text="Classes" path="/admin/classes" isActive={isActive('/admin/classes')} onClick={() => navigate('/admin/classes')} />
+              <NavLink text="Subjects" path="/admin/subjects" isActive={isActive('/admin/subjects')} onClick={() => navigate('/admin/subjects')} />
               <NavLink text="Questions" path="/admin/questions" isActive={isActive('/admin/questions')} onClick={() => navigate('/admin/questions')} />
               <NavLink text="Exams" path="/admin/exams" isActive={isActive('/admin/exams')} onClick={() => navigate('/admin/exams')} />
               <NavLink text="Reports" path="/admin/reports" isActive={isActive('/admin/reports')} onClick={() => navigate('/admin/reports')} />

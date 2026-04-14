@@ -4,6 +4,7 @@ import { endAdaptiveTest, startAdaptiveTest, submitAdaptiveAnswer } from '../ser
 import useExamIntegrityGuard from '../hooks/useExamIntegrityGuard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { showToast } from '../utils/appEvents';
+import { fetchStudentSubjectScope } from '../services/subjectService';
 
 const TOTAL_QUESTIONS_FALLBACK = 10;
 const DURATION_FALLBACK_MINUTES = 20;
@@ -24,6 +25,8 @@ export default function AdaptiveTest() {
 
     const [step, setStep] = useState('setup');
     const [subject, setSubject] = useState('');
+    const [subjectOptions, setSubjectOptions] = useState([]);
+    const [subjectScopeLoading, setSubjectScopeLoading] = useState(true);
     const [selectedQuestionCount, setSelectedQuestionCount] = useState(TOTAL_QUESTIONS_FALLBACK);
     const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(DURATION_FALLBACK_MINUTES);
     const [enableNegativeMarking, setEnableNegativeMarking] = useState(false);
@@ -56,6 +59,31 @@ export default function AdaptiveTest() {
     );
 
     const remainingCount = Math.max(totalQuestions - answeredCount, 0);
+
+    useEffect(() => {
+        const loadSubjectScope = async () => {
+            try {
+                setSubjectScopeLoading(true);
+                const response = await fetchStudentSubjectScope();
+                const nextOptions = response.subjectOptions || [];
+                setSubjectOptions(nextOptions);
+                setSubject((currentSubject) => {
+                    if (currentSubject && (currentSubject === 'Mixed' || nextOptions.some((option) => option.code === currentSubject))) {
+                        return currentSubject;
+                    }
+
+                    return nextOptions[0]?.code || '';
+                });
+            } catch (subjectError) {
+                console.error('Failed to load subject scope:', subjectError);
+                setError(subjectError?.response?.data?.message || subjectError.message);
+            } finally {
+                setSubjectScopeLoading(false);
+            }
+        };
+
+        loadSubjectScope();
+    }, []);
 
     useEffect(() => {
         if (step !== 'question' || !attemptStartedAt) {
@@ -329,16 +357,10 @@ export default function AdaptiveTest() {
 
                         <div className="form-group">
                             <label>Select Subject</label>
-                            <select value={subject} onChange={(event) => setSubject(event.target.value)}>
+                            <select value={subject} onChange={(event) => setSubject(event.target.value)} disabled={subjectScopeLoading || loading}>
                                 <option value="">-- Choose Subject --</option>
-                                <option value="DBMS">DBMS</option>
-                                <option value="OS">Operating Systems</option>
-                                <option value="CN">Computer Networks</option>
-                                <option value="DSA">Data Structures</option>
-                                <option value="Aptitude">Aptitude</option>
-                                <option value="Verbal">Verbal Ability</option>
-                                <option value="Logical">Logical Reasoning</option>
-                                <option value="Mixed">Mixed (All Subjects)</option>
+                                {subjectOptions.map((option) => <option key={option.code} value={option.code}>{option.name || option.code}</option>)}
+                                {subjectOptions.length > 1 && <option value="Mixed">Mixed (All Subjects)</option>}
                             </select>
                         </div>
 
@@ -365,7 +387,7 @@ export default function AdaptiveTest() {
                             <span>Enable negative marking for this practice session</span>
                         </label>
 
-                        <button className="button button-lg" onClick={handleStart} disabled={!subject || loading} style={{ width: '100%' }}>
+                        <button className="button button-lg" onClick={handleStart} disabled={!subject || loading || subjectScopeLoading} style={{ width: '100%' }}>
                             {loading ? 'Starting...' : 'Start Adaptive Test'}
                         </button>
                         <button className="button-secondary" onClick={() => navigate('/history')} style={{ width: '100%', marginTop: 12 }}>

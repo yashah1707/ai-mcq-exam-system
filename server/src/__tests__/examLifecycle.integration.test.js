@@ -9,6 +9,7 @@ const User = require('../models/user.model');
 const Question = require('../models/question.model');
 const PerformanceAnalytics = require('../models/performanceAnalytics.model');
 const ExamAttempt = require('../models/examAttempt.model');
+const AcademicClass = require('../models/academicClass.model');
 
 beforeAll(async () => {
   let mongoUri = process.env.MONGO_URI || '';
@@ -47,6 +48,7 @@ beforeEach(async () => {
     User.deleteMany({}),
     Question.deleteMany({}),
     PerformanceAnalytics.deleteMany({}),
+    AcademicClass.deleteMany({}),
   ]);
 });
 
@@ -301,6 +303,15 @@ describe('Exam lifecycle regression coverage', () => {
       });
 
     const now = Date.now();
+    await AcademicClass.create({
+      name: '2026-A',
+      year: 1,
+      course: 'GENERAL',
+      capacity: 60,
+      description: 'Teacher attempt operations class',
+      labBatches: [],
+    });
+
     const examResponse = await request(app)
       .post('/api/exams')
       .set('Authorization', `Bearer ${teacher.token}`)

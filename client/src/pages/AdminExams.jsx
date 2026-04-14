@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchExams, createExam, updateExam, deleteExam } from '../services/examService';
 import { getActiveAttemptsForExam, resetAttempt } from '../services/examAttemptService';
 import { createQuestion, fetchQuestions, uploadQuestionImage, deleteQuestionImage } from '../services/questionService';
+import { fetchSubjects } from '../services/subjectService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SymbolPicker from '../components/SymbolPicker';
 import { showToast } from '../utils/appEvents';
@@ -13,7 +14,6 @@ const MIN_OPTIONS = 2;
 const EXAM_CREATION_MODE_MANUAL = 'manual';
 const EXAM_CREATION_MODE_AUTO = 'auto';
 
-const QUESTION_SUBJECT_OPTIONS = ['DSA', 'DBMS', 'OS', 'CN', 'Aptitude', 'Logical', 'Verbal'];
 const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard'];
 
 const sanitizeSubjectList = (subjects) => Array.from(new Set(
@@ -216,6 +216,7 @@ export default function AdminExams() {
   );
   const [exams, setExams] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [catalogSubjectOptions, setCatalogSubjectOptions] = useState([]);
   const [questionSearch, setQuestionSearch] = useState('');
   const [questionSubjectFilter, setQuestionSubjectFilter] = useState(FILTER_ALL);
   const [questionDifficultyFilter, setQuestionDifficultyFilter] = useState(FILTER_ALL);
@@ -256,8 +257,8 @@ export default function AdminExams() {
     [form.assignedLabBatches]
   );
   const availableExamSubjects = useMemo(
-    () => (isTeacher ? teacherAssignedSubjects : QUESTION_SUBJECT_OPTIONS),
-    [isTeacher, teacherAssignedSubjects]
+    () => (isTeacher ? teacherAssignedSubjects : catalogSubjectOptions),
+    [catalogSubjectOptions, isTeacher, teacherAssignedSubjects]
   );
 
   const effectiveSubjectFilter = questionSubjectFilter !== FILTER_ALL
@@ -420,12 +421,14 @@ export default function AdminExams() {
     setError(null);
 
     try {
-      const [examResponse, questionResponse] = await Promise.all([
+      const [examResponse, questionResponse, subjectResponse] = await Promise.all([
         fetchExams({ mine: isTeacher }),
-        isTeacher ? fetchQuestions({ scope: 'assigned' }) : fetchQuestions({})
+        isTeacher ? fetchQuestions({ scope: 'assigned' }) : fetchQuestions({}),
+        fetchSubjects({ includeInactive: false })
       ]);
       setExams(examResponse.exams || []);
       setQuestions(questionResponse.questions || []);
+      setCatalogSubjectOptions((subjectResponse.subjectOptions || []).map((subject) => subject.code || subject));
     } catch (err) {
       setError(err?.response?.data?.message || err.message);
     } finally {
@@ -1272,7 +1275,7 @@ export default function AdminExams() {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Subject</label>
                   <select value={questionForm.subject} onChange={(event) => updateQuestionForm({ subject: event.target.value })}>
-                    {(isTeacher ? teacherAssignedSubjects : QUESTION_SUBJECT_OPTIONS).map((subject) => <option key={subject} value={subject}>{subject}</option>)}
+                    {availableExamSubjects.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
                   </select>
                 </div>
 

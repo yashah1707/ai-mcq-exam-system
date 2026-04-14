@@ -63,6 +63,24 @@ const createQuestionValidation = [
         .notEmpty().withMessage('Difficulty is required')
         .isIn(['Easy', 'Medium', 'Hard']).withMessage('Difficulty must be Easy, Medium, or Hard'),
 
+    body('subject')
+        .trim()
+        .notEmpty().withMessage('Subject is required'),
+
+    body('topic')
+        .trim()
+        .notEmpty().withMessage('Topic is required')
+        .isLength({ min: 2, max: 100 }).withMessage('Topic must be between 2 and 100 characters'),
+
+    body('year')
+        .optional()
+        .isInt({ min: 1, max: 4 }).withMessage('Year must be between 1 and 4'),
+
+    body('course')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ min: 2, max: 20 }).withMessage('Course must be between 2 and 20 characters'),
+
     body('marks')
         .optional()
         .isInt({ min: 1, max: 100 }).withMessage('Marks must be between 1 and 100'),
@@ -114,6 +132,25 @@ const updateQuestionValidation = [
     body('difficulty')
         .optional()
         .isIn(['Easy', 'Medium', 'Hard']).withMessage('Difficulty must be Easy, Medium, or Hard'),
+
+    body('subject')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Subject is required'),
+
+    body('topic')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 100 }).withMessage('Topic must be between 2 and 100 characters'),
+
+    body('year')
+        .optional()
+        .isInt({ min: 1, max: 4 }).withMessage('Year must be between 1 and 4'),
+
+    body('course')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ min: 2, max: 20 }).withMessage('Course must be between 2 and 20 characters'),
 
     body('marks')
         .optional()
@@ -167,6 +204,24 @@ const bulkCreateQuestionsValidation = [
     body('*.difficulty')
         .notEmpty().withMessage('Each question must have a difficulty')
         .isIn(['Easy', 'Medium', 'Hard']).withMessage('Difficulty must be Easy, Medium, or Hard'),
+
+    body('*.subject')
+        .trim()
+        .notEmpty().withMessage('Each question must have a subject'),
+
+    body('*.topic')
+        .trim()
+        .notEmpty().withMessage('Each question must have a topic')
+        .isLength({ min: 2, max: 100 }).withMessage('Topic must be between 2 and 100 characters'),
+
+    body('*.year')
+        .optional()
+        .isInt({ min: 1, max: 4 }).withMessage('Year must be between 1 and 4'),
+
+    body('*.course')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ min: 2, max: 20 }).withMessage('Course must be between 2 and 20 characters'),
 
     body()
         .custom((questions) => {

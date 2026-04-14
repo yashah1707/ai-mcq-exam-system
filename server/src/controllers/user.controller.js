@@ -4,7 +4,7 @@ const User = require('../models/user.model');
 const AcademicClass = require('../models/academicClass.model');
 const { buildAdminId, buildEmployeeId, buildEnrollmentNo, normalizeRoleIdentifier, normalizeUserIdentity, serializeUser } = require('../utils/userIdentity');
 const { queueAccountSetupEmail, queuePasswordResetEmail } = require('../services/email.service');
-const { SUBJECT_OPTIONS } = require('../utils/subjects');
+const { getAvailableSubjectCodes, normalizeSubjectCode } = require('../utils/subjects');
 const { createTokenRecord } = require('../utils/tokenSecurity');
 
 const buildPlaceholderPassword = () => `Invite#${crypto.randomBytes(8).toString('hex')}`;
@@ -12,14 +12,16 @@ const MAX_BULK_USERS = 500;
 
 const normalizeBoolean = (value) => value === true || value === 'true';
 
-const normalizeSubjects = (subjects) => {
+const normalizeSubjects = async (subjects) => {
   if (!Array.isArray(subjects)) {
     return [];
   }
 
+  const availableSubjectCodes = await getAvailableSubjectCodes({ includeInactive: false });
+
   return Array.from(new Set(subjects
-    .map((subject) => String(subject || '').trim())
-    .filter((subject) => SUBJECT_OPTIONS.includes(subject))));
+    .map((subject) => normalizeSubjectCode(subject))
+    .filter((subject) => availableSubjectCodes.includes(subject))));
 };
 
 const normalizeBatchValue = (batch) => String(batch || '').trim();
@@ -131,7 +133,7 @@ const prepareUserData = ({ name, firstName, lastName, email, password, role = 's
     normalizedAdminId: normalizedRole === 'admin' ? normalizeRoleIdentifier(adminId) : '',
     normalizedEmployeeId: normalizedRole === 'teacher' ? normalizeRoleIdentifier(employeeId) : '',
     normalizedDepartment: typeof department === 'string' ? department.trim() : '',
-    normalizedSubjects: normalizedRole === 'teacher' ? normalizeSubjects(subjects) : [],
+    rawSubjects: normalizedRole === 'teacher' ? subjects : [],
     normalizedBatch: normalizedRole === 'student' ? normalizeBatchValue(className ?? batch) : '',
     normalizedAssignedBatches: normalizedRole === 'teacher' ? normalizeBatchList(assignedClasses ?? assignedBatches) : [],
     normalizedAssignedLabBatches: normalizedRole === 'teacher' ? normalizeAssignedLabBatchList(assignedLabBatches) : [],
@@ -196,6 +198,9 @@ const issuePasswordAccessLink = async (user, mode = 'setup') => {
 
 const createManagedUser = async (payload, options = {}) => {
   const prepared = prepareUserData(payload);
+  prepared.normalizedSubjects = prepared.normalizedRole === 'teacher'
+    ? await normalizeSubjects(prepared.rawSubjects)
+    : [];
 
   if (!prepared.normalizedIdentity.name || !prepared.normalizedEmail || (!prepared.normalizedPassword && !prepared.shouldSendInvite)) {
     const error = new Error('First name, last name, email, and either a password or setup invite are required');
@@ -546,7 +551,7 @@ const updateUserDetails = async (req, res, next) => {
     }
 
     const nextSubjects = nextRole === 'teacher'
-      ? normalizeSubjects(req.body.subjects ?? user.subjects)
+      ? await normalizeSubjects(req.body.subjects ?? user.subjects)
       : [];
     const nextBatch = nextRole === 'student'
       ? normalizeBatchValue(req.body.class ?? req.body.batch ?? user.batch)

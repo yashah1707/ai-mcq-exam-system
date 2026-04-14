@@ -67,6 +67,8 @@ describe('API integration (auth, admin -> exam flow)', () => {
       options: ['1','3','4','5'],
       correctAnswer: 2,
       category: 'Aptitude',
+      subject: 'Aptitude',
+      topic: 'Arithmetic',
       difficulty: 'Easy',
       marks: 1
     };
@@ -252,6 +254,81 @@ describe('API integration (auth, admin -> exam flow)', () => {
     const storedClass = await AcademicClass.findById(classId);
     expect(storedClass).not.toBeNull();
     expect(storedClass.labBatches).toHaveLength(1);
+  });
+
+  test('admin can bulk assign students to a class by enrollment number with row-level failures', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({
+      name: 'Bulk Assign Admin',
+      email: 'bulk.assign.admin@test.com',
+      password: adminPassword,
+      role: 'admin',
+      adminId: 'ADM-BULK-CLASS',
+      isVerified: true,
+    });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'bulk.assign.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+    const adminToken = adminLogin.body.token;
+
+    const studentOne = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ firstName: 'Bulk', lastName: 'One', email: 'bulk.one@test.com', enrollmentNo: 'BULK001', password: 'StudentPass123!', role: 'student' });
+    const studentTwo = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ firstName: 'Bulk', lastName: 'Two', email: 'bulk.two@test.com', enrollmentNo: 'BULK002', password: 'StudentPass123!', role: 'student' });
+    const studentThree = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ firstName: 'Bulk', lastName: 'Three', email: 'bulk.three@test.com', enrollmentNo: 'BULK003', password: 'StudentPass123!', role: 'student' });
+
+    expect(studentOne.status).toBe(201);
+    expect(studentTwo.status).toBe(201);
+    expect(studentThree.status).toBe(201);
+
+    const createClassRes = await request(app)
+      .post('/api/classes')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'CSV-CLASS-A', capacity: 3, description: 'CSV assignment class' });
+
+    expect(createClassRes.status).toBe(201);
+    const classId = createClassRes.body.class._id;
+
+    const createLabBatchRes = await request(app)
+      .post(`/api/classes/${classId}/lab-batches`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Batch A', capacity: 1 });
+
+    expect(createLabBatchRes.status).toBe(201);
+
+    const bulkAssignRes = await request(app)
+      .post(`/api/classes/${classId}/bulk-assign-students`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send([
+        { enrollmentNo: 'BULK001', labBatch: 'Batch A' },
+        { enrollmentNo: 'BULK002', labBatch: '' },
+        { enrollmentNo: 'BULK001', labBatch: '' },
+        { enrollmentNo: 'UNKNOWN001', labBatch: '' },
+        { enrollmentNo: 'BULK003', labBatch: 'Batch A' },
+      ]);
+
+    expect(bulkAssignRes.status).toBe(200);
+    expect(bulkAssignRes.body.assignedCount).toBe(2);
+    expect(bulkAssignRes.body.failedCount).toBe(3);
+    expect(bulkAssignRes.body.errors.map((entry) => entry.message)).toContain('Duplicate enrollment number in import file');
+    expect(bulkAssignRes.body.errors.map((entry) => entry.message)).toContain('Student not found');
+    expect(bulkAssignRes.body.errors.map((entry) => entry.message)).toContain('This assignment exceeds the lab batch capacity of 1');
+
+    const refreshedStudents = await User.find({ enrollmentNo: { $in: ['BULK001', 'BULK002', 'BULK003'] } }).sort({ enrollmentNo: 1 });
+    expect(refreshedStudents[0].batch).toBe('CSV-CLASS-A');
+    expect(refreshedStudents[0].labBatch).toBe('Batch A');
+    expect(refreshedStudents[1].batch).toBe('CSV-CLASS-A');
+    expect(refreshedStudents[1].labBatch).toBe('');
+    expect(refreshedStudents[2].batch).toBe('');
+    expect(refreshedStudents[2].labBatch).toBe('');
   });
 
   test('login establishes a cookie-backed session and auth me returns the signed-in user', async () => {
@@ -1027,5 +1104,173 @@ describe('API integration (auth, admin -> exam flow)', () => {
     expect(teacherStudents.status).toBe(200);
     expect(teacherStudents.body.students.map((student) => student.email)).toContain('lab.alpha@test.com');
     expect(teacherStudents.body.students.map((student) => student.email)).not.toContain('lab.beta@test.com');
+  });
+
+  test('admin can bulk promote selected classes until final year', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({ name: 'Promotion Admin', email: 'promotion.admin@test.com', password: adminPassword, role: 'admin', isVerified: true });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'promotion.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+
+    const firstClass = await request(app)
+      .post('/api/classes')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ name: 'PROMOTE-A', year: 1, course: 'GENERAL', capacity: 60, description: 'Promote me' });
+    const secondClass = await request(app)
+      .post('/api/classes')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ name: 'PROMOTE-B', year: 3, course: 'GENERAL', capacity: 60, description: 'Promote me too' });
+
+    expect(firstClass.status).toBe(201);
+    expect(secondClass.status).toBe(201);
+
+    const promoteResponse = await request(app)
+      .post('/api/classes/promote')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ classIds: [firstClass.body.class._id, secondClass.body.class._id] });
+
+    expect(promoteResponse.status).toBe(200);
+    expect(promoteResponse.body.promotedCount).toBe(2);
+
+    const refreshedClasses = await AcademicClass.find({ name: { $in: ['PROMOTE-A', 'PROMOTE-B'] } }).sort({ name: 1 });
+    expect(refreshedClasses[0].year).toBe(2);
+    expect(refreshedClasses[1].year).toBe(4);
+  });
+
+  test('admin can bulk create classes with row-level failures', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({ name: 'Bulk Class Admin', email: 'bulk.class.admin@test.com', password: adminPassword, role: 'admin', isVerified: true });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'bulk.class.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+
+    await AcademicClass.create({ name: 'EXISTING-CLASS', year: 1, course: 'GENERAL', capacity: 60, description: 'Already exists' });
+
+    const bulkResponse = await request(app)
+      .post('/api/classes/bulk')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send([
+        { name: 'FY-CSE-A', year: 1, course: 'CSE', capacity: 60, description: 'New first year CSE class' },
+        { name: 'EXISTING-CLASS', year: 2, course: 'GENERAL', capacity: 60, description: 'Duplicate in database' },
+        { name: 'SY-IT-A', year: 2, course: 'IT' },
+        { name: 'FY-CSE-A', year: 1, course: 'CSE', capacity: 60, description: 'Duplicate in file' },
+      ]);
+
+    expect(bulkResponse.status).toBe(201);
+    expect(bulkResponse.body.createdCount).toBe(2);
+    expect(bulkResponse.body.failedCount).toBe(2);
+    expect(bulkResponse.body.errors).toHaveLength(2);
+    expect(bulkResponse.body.errors.map((entry) => entry.message)).toContain('A class with this name already exists');
+    expect(bulkResponse.body.errors.map((entry) => entry.message)).toContain('Duplicate class name in import file');
+
+    const createdClasses = await AcademicClass.find({ name: { $in: ['FY-CSE-A', 'SY-IT-A'] } }).sort({ name: 1 });
+    expect(createdClasses).toHaveLength(2);
+    expect(createdClasses[0].course).toBe('CSE');
+    expect(createdClasses[0].capacity).toBe(60);
+    expect(createdClasses[1].course).toBe('IT');
+    expect(createdClasses[1].capacity).toBe(60);
+  });
+
+  test('question creation rejects subject codes outside the catalog scope', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({ name: 'Question Scope Admin', email: 'question.scope.admin@test.com', password: adminPassword, role: 'admin', isVerified: true });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'question.scope.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+
+    const questionResponse = await request(app)
+      .post('/api/questions')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        questionText: 'Invalid scoped DBMS question?',
+        options: ['A', 'B', 'C', 'D'],
+        correctAnswer: 0,
+        category: 'Technical',
+        subject: 'DBMS',
+        topic: 'Transactions',
+        year: 2,
+        course: 'CSE',
+        difficulty: 'Easy',
+        marks: 1,
+      });
+
+    expect(questionResponse.status).toBe(400);
+    expect(questionResponse.body.message).toMatch(/not available/i);
+  });
+
+  test('subject creation rejects non-alphanumeric subject codes', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({ name: 'Subject Format Admin', email: 'subject.format.admin@test.com', password: adminPassword, role: 'admin', isVerified: true });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'subject.format.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+
+    const subjectResponse = await request(app)
+      .post('/api/subjects')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        code: 'DBMS-101',
+        name: 'Database Systems 101',
+        year: 1,
+        course: 'GENERAL',
+        description: 'Invalid code format test',
+      });
+
+    expect(subjectResponse.status).toBe(400);
+    expect(subjectResponse.body.message).toMatch(/alphanumeric only/i);
+  });
+
+  test('exam creation rejects subjects not available for the selected class scope', async () => {
+    const salt = await bcrypt.genSalt(10);
+    const adminPassword = await bcrypt.hash('adminpass', salt);
+    await User.create({ name: 'Exam Scope Admin', email: 'exam.scope.admin@test.com', password: adminPassword, role: 'admin', isVerified: true });
+
+    const adminLogin = await request(app).post('/api/auth/login').send({ email: 'exam.scope.admin@test.com', password: 'adminpass' });
+    expect(adminLogin.status).toBe(200);
+
+    await request(app)
+      .post('/api/classes')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ name: '2027-CSE-A', year: 2, course: 'CSE', capacity: 60, description: 'Catalog-scoped class' });
+
+    const questionResponse = await request(app)
+      .post('/api/questions')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        questionText: 'General DBMS question?',
+        options: ['A', 'B', 'C', 'D'],
+        correctAnswer: 1,
+        category: 'Technical',
+        subject: 'DBMS',
+        topic: 'Normalization',
+        difficulty: 'Easy',
+        marks: 1,
+      });
+
+    expect(questionResponse.status).toBe(201);
+
+    const examResponse = await request(app)
+      .post('/api/exams')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        title: 'Invalid CSE DBMS Exam',
+        subject: 'DBMS',
+        description: 'Should fail because CSE year 2 has no DBMS catalog entry yet',
+        duration: 15,
+        totalMarks: 1,
+        passingMarks: 1,
+        questions: [questionResponse.body.question._id],
+        assignedClasses: ['2027-CSE-A'],
+        startDate: new Date(Date.now() - 60000).toISOString(),
+        endDate: new Date(Date.now() + 600000).toISOString(),
+      });
+
+    expect(examResponse.status).toBe(400);
+    expect(examResponse.body.message).toMatch(/not available for class/i);
   });
 });
