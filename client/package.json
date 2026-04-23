@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "ai-mcq-exam-system": "file:..",
     "axios": "^1.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",

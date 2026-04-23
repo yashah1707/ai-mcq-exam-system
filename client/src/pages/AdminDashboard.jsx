@@ -69,10 +69,7 @@ export default function AdminDashboard() {
     <div className="container">
       <div className="nav">
         <h2>Admin Dashboard</h2>
-        <div>
-          <span className="small">{user?.email}</span>
-          <button style={{ marginLeft: 12 }} onClick={logout}>Logout</button>
-        </div>
+  
       </div>
 
       <div className="card">
