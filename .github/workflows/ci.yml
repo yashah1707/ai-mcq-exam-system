@@ -9,16 +9,6 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-    services:
-      mongo:
-        image: mongo:5.0
-        ports:
-          - 27017:27017
-        options: --health-cmd="mongosh --eval 'db.adminCommand({ ping: 1 })'" --health-interval=10s --health-timeout=5s --health-retries=5
-      redis:
-        image: redis:6.2
-        ports:
-          - 6379:6379
     steps:
       - uses: actions/checkout@v4
 
@@ -31,11 +21,6 @@ jobs:
         run: npm --prefix server ci
 
       - name: Run server tests
-        env:
-          NODE_ENV: test
-          MONGO_URL: mongodb://127.0.0.1:27017/ci_test
-          REDIS_URL: redis://127.0.0.1:6379
-          JWT_SECRET: testsecret
         run: npm --prefix server test
 
       - name: Install client deps

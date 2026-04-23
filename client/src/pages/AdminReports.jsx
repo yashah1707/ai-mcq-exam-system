@@ -25,8 +25,8 @@ import { AuthContext } from '../context/AuthContext';
 import { downloadCsv } from '../utils/csvExport';
 import { downloadTablePdf } from '../utils/pdfExport';
 import { getDisplayName, getDisplayNameSlug } from '../utils/userDisplay';
+import { fetchSubjects } from '../services/subjectService';
 
-const SUBJECT_OPTIONS = ['DBMS', 'OS', 'CN', 'DSA', 'Aptitude', 'Logical', 'Verbal'];
 const CHART_COLORS = ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#7c3aed', '#0f766e'];
 
 export default function AdminReports() {
@@ -34,8 +34,9 @@ export default function AdminReports() {
   const isTeacher = user?.role === 'teacher';
   const [reportType, setReportType] = useState('subject-students');
   const [users, setUsers] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('DBMS');
+  const [selectedSubject, setSelectedSubject] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reportData, setReportData] = useState(null);
@@ -47,25 +48,29 @@ export default function AdminReports() {
   const filters = useMemo(() => ({ startDate, endDate }), [startDate, endDate]);
   const availableSubjects = useMemo(() => {
     if (!isTeacher) {
-      return SUBJECT_OPTIONS;
+      return subjectOptions;
     }
 
     const scopedSubjects = Array.isArray(user?.subjects) ? user.subjects.filter(Boolean) : [];
-    return scopedSubjects.length ? scopedSubjects : SUBJECT_OPTIONS;
-  }, [isTeacher, user]);
+    return scopedSubjects.length ? scopedSubjects : subjectOptions;
+  }, [isTeacher, subjectOptions, user]);
 
   useEffect(() => {
     if (!availableSubjects.includes(selectedSubject)) {
-      setSelectedSubject(availableSubjects[0] || SUBJECT_OPTIONS[0]);
+      setSelectedSubject(availableSubjects[0] || '');
     }
   }, [availableSubjects, selectedSubject]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await getReportStudents();
+        const [res, subjectResponse] = await Promise.all([
+          getReportStudents(),
+          fetchSubjects({ includeInactive: false }),
+        ]);
         const studentUsers = (res.students || []).filter(user => user.role === 'student');
         setUsers(studentUsers);
+        setSubjectOptions((subjectResponse.subjectOptions || []).map((subject) => subject.code || subject));
         if (studentUsers.length > 0) {
           setSelectedStudentId(studentUsers[0]._id);
         }

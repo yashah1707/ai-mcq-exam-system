@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { buildAdminId, buildEmployeeId, buildEnrollmentNo, normalizeRoleIdentifier, normalizeUserIdentity } = require('../utils/userIdentity');
-const { SUBJECT_OPTIONS } = require('../utils/subjects');
 
 const teacherLabBatchAssignmentSchema = new mongoose.Schema({
   className: { type: String, trim: true, default: '' },
@@ -19,7 +18,6 @@ const userSchema = new mongoose.Schema({
   department: { type: String, trim: true, default: '' },
   subjects: {
     type: [String],
-    enum: SUBJECT_OPTIONS,
     default: [],
   },
   batch: { type: String, trim: true, default: '' },

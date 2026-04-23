@@ -1,6 +1,7 @@
 const Question = require('../models/question.model');
 const { deleteQuestionImageByPublicId } = require('../services/cloudinary.service');
 const { ensureResourceOwnerOrAdmin, getManagedSubjects, isTeacher } = require('../utils/permissions');
+const { assertSubjectExistsForScope, normalizeCourseValue, normalizeSubjectCode } = require('../utils/subjects');
 
 const normalizeOptions = (options) => (
   Array.isArray(options)
@@ -23,7 +24,9 @@ const buildQuestionData = (payload) => ({
   questionImageUrl: payload.questionImageUrl !== undefined ? toOptionalTrimmedString(payload.questionImageUrl) : undefined,
   questionImagePublicId: payload.questionImagePublicId !== undefined ? toOptionalTrimmedString(payload.questionImagePublicId) : undefined,
   explanation: payload.explanation !== undefined ? toOptionalTrimmedString(payload.explanation) : undefined,
-  subject: payload.subject,
+  subject: payload.subject !== undefined ? normalizeSubjectCode(payload.subject) : undefined,
+  year: payload.year !== undefined ? Number(payload.year) : undefined,
+  course: payload.course !== undefined ? normalizeCourseValue(payload.course) : undefined,
   topic: payload.topic !== undefined ? toOptionalTrimmedString(payload.topic) : undefined,
 });
 
@@ -63,11 +66,18 @@ const cleanupQuestionImageAsset = async (publicId) => {
 
 const createQuestion = async (req, res, next) => {
   try {
-    const { questionText, options, correctAnswer, category, difficulty, marks, negativeMarks, questionImageUrl, questionImagePublicId, explanation, subject, topic } = buildQuestionData(req.body);
-    if (!questionText || !options || correctAnswer === undefined || !category || !difficulty) {
+    const { questionText, options, correctAnswer, category, difficulty, marks, negativeMarks, questionImageUrl, questionImagePublicId, explanation, subject, year = 1, course = 'GENERAL', topic } = buildQuestionData(req.body);
+    if (!questionText || !options || correctAnswer === undefined || !category || !difficulty || !subject || !topic) {
       res.status(400);
       throw new Error('All required fields must be provided');
     }
+
+    await assertSubjectExistsForScope({ code: subject, year, course });
+    if (isTeacher(req.user) && !getManagedSubjects(req.user).includes(subject)) {
+      res.status(403);
+      throw new Error('Teachers can only create questions for assigned subjects');
+    }
+
     validateOptionsAndAnswer(options, correctAnswer);
     const question = await Question.create({
       questionText,
@@ -81,6 +91,8 @@ const createQuestion = async (req, res, next) => {
       questionImagePublicId,
       explanation,
       subject,
+      year,
+      course,
       topic,
       createdBy: req.user._id
     });
@@ -119,8 +131,8 @@ const bulkCreateQuestions = async (req, res, next) => {
     }
 
     const docs = payload.map(q => {
-      const { questionText, options, correctAnswer, category, difficulty, marks = 1, negativeMarks = 0, questionImageUrl = '', questionImagePublicId = '', explanation = '', subject, topic } = buildQuestionData(q);
-      if (!questionText || !options || correctAnswer === undefined || !category || !difficulty) {
+      const { questionText, options, correctAnswer, category, difficulty, marks = 1, negativeMarks = 0, questionImageUrl = '', questionImagePublicId = '', explanation = '', subject, year = 1, course = 'GENERAL', topic } = buildQuestionData(q);
+      if (!questionText || !options || correctAnswer === undefined || !category || !difficulty || !subject || !topic) {
         throw new Error('Each question must include required fields');
       }
       validateOptionsAndAnswer(options, correctAnswer);
@@ -136,10 +148,20 @@ const bulkCreateQuestions = async (req, res, next) => {
         questionImagePublicId,
         explanation,
         subject,
+        year,
+        course,
         topic,
         createdBy: req.user._id
       };
     });
+
+    for (const doc of docs) {
+      await assertSubjectExistsForScope({ code: doc.subject, year: doc.year, course: doc.course });
+      if (isTeacher(req.user) && !getManagedSubjects(req.user).includes(doc.subject)) {
+        res.status(403);
+        throw new Error('Teachers can only create questions for assigned subjects');
+      }
+    }
 
     const created = await Question.insertMany(docs, { ordered: false });
     res.status(201).json({ createdCount: created.length, created });
@@ -181,9 +203,18 @@ const updateQuestion = async (req, res, next) => {
     const updates = buildQuestionData(req.body);
     const nextOptions = updates.options !== undefined ? updates.options : question.options;
     const nextCorrectAnswer = updates.correctAnswer !== undefined ? updates.correctAnswer : question.correctAnswer;
+    const nextSubject = updates.subject !== undefined ? updates.subject : question.subject;
+    const nextYear = updates.year !== undefined ? updates.year : question.year;
+    const nextCourse = updates.course !== undefined ? updates.course : question.course;
     const previousImagePublicId = question.questionImagePublicId;
 
     validateOptionsAndAnswer(nextOptions, nextCorrectAnswer);
+    await assertSubjectExistsForScope({ code: nextSubject, year: nextYear, course: nextCourse });
+    if (isTeacher(req.user) && !getManagedSubjects(req.user).includes(nextSubject)) {
+      res.status(403);
+      throw new Error('Teachers can only update questions for assigned subjects');
+    }
+
     assignDefinedFields(question, updates);
 
     await question.save();

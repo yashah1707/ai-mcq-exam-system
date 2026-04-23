@@ -1,28 +1,49 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { createQuestion, fetchQuestions, updateQuestion, deleteQuestion, bulkCreateQuestions, uploadQuestionImage, deleteQuestionImage } from '../services/questionService';
+import { fetchSubjects } from '../services/subjectService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SymbolPicker from '../components/SymbolPicker';
 import { showToast } from '../utils/appEvents';
 import { AuthContext } from '../context/AuthContext';
 
 const MIN_OPTIONS = 2;
+const YEAR_OPTIONS = [1, 2, 3, 4];
+const DEFAULT_COURSE = 'GENERAL';
+const CATEGORY_OPTIONS = ['Aptitude', 'Logical', 'Technical'];
+const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard'];
 const TEACHER_VIEW_OPTIONS = {
   MINE: 'mine',
   ASSIGNED: 'assigned'
 };
 
-const createEmptyForm = () => ({
+const sanitizeSubjectList = (subjects) => Array.from(new Set(
+  (Array.isArray(subjects) ? subjects : [])
+    .map((subject) => String(subject || '').trim())
+    .filter(Boolean)
+));
+
+const getDefaultCatalogEntry = (subjectCatalog = []) => subjectCatalog[0] || null;
+
+const createEmptyForm = (subjectCatalog = []) => {
+  const defaultEntry = getDefaultCatalogEntry(subjectCatalog);
+
+  return {
   questionText: '',
   options: ['', '', '', ''],
   correctAnswer: 0,
   category: 'Aptitude',
+  subject: defaultEntry?.code || '',
+  topic: 'General',
+  year: defaultEntry?.year || 1,
+  course: defaultEntry?.course || DEFAULT_COURSE,
   difficulty: 'Easy',
   marks: 1,
   negativeMarks: 0,
   questionImageUrl: '',
   questionImagePublicId: '',
   explanation: ''
-});
+  };
+};
 
 const getOptionLabel = (index) => {
   let label = '';
@@ -89,11 +110,91 @@ const extractOptionsFromRow = (row) => {
     .map(([, value]) => value);
 };
 
+const normalizeUploadedQuestion = (row) => ({
+  questionText: String(row.questionText || '').trim(),
+  options: Array.isArray(row.options) ? row.options.map((option) => String(option || '').trim()) : extractOptionsFromRow(row),
+  correctAnswer: parseCorrectAnswerValue(row.correctAnswer ?? row.correctIndex, Array.isArray(row.options) ? row.options.length : undefined),
+  category: String(row.category || 'Aptitude').trim() || 'Aptitude',
+  subject: String(row.subject || '').trim().toUpperCase(),
+  topic: String(row.topic || 'General').trim() || 'General',
+  year: Number(row.year || 1),
+  course: String(row.course || DEFAULT_COURSE).trim().toUpperCase() || DEFAULT_COURSE,
+  difficulty: String(row.difficulty || 'Easy').trim() || 'Easy',
+  marks: Number(row.marks || 1),
+  negativeMarks: Number(row.negativeMarks || 0),
+  explanation: String(row.explanation || '').trim()
+});
+
+const buildScopedSubjectCatalog = (subjects, isTeacher, teacherAssignedSubjects) => {
+  const catalog = Array.isArray(subjects) ? subjects : [];
+  if (!isTeacher) {
+    return catalog;
+  }
+
+  return catalog.filter((subject) => teacherAssignedSubjects.includes(subject.code));
+};
+
+const syncFormWithCatalog = (form, subjectCatalog) => {
+  if (!subjectCatalog.length) {
+    return form;
+  }
+
+  const fallbackEntry = getDefaultCatalogEntry(subjectCatalog);
+  const requestedYear = Number(form.year || fallbackEntry.year);
+  const requestedCourse = String(form.course || fallbackEntry.course || DEFAULT_COURSE);
+  const matchingScopeSubjects = subjectCatalog.filter((subject) => (
+    Number(subject.year) === requestedYear
+    && String(subject.course || DEFAULT_COURSE) === requestedCourse
+  ));
+  const nextScopeEntry = matchingScopeSubjects[0]
+    || subjectCatalog.find((subject) => String(subject.course || DEFAULT_COURSE) === requestedCourse)
+    || subjectCatalog.find((subject) => Number(subject.year) === requestedYear)
+    || fallbackEntry;
+
+  const nextEntry = matchingScopeSubjects.find((subject) => subject.code === form.subject)
+    || nextScopeEntry;
+
+  const nextForm = {
+    ...form,
+    year: Number(nextEntry.year || 1),
+    course: String(nextEntry.course || DEFAULT_COURSE),
+    subject: form.subject && matchingScopeSubjects.some((subject) => subject.code === form.subject)
+      ? form.subject
+      : nextEntry.code,
+  };
+
+  if (
+    nextForm.year === form.year
+    && nextForm.course === form.course
+    && nextForm.subject === form.subject
+  ) {
+    return form;
+  }
+
+  return nextForm;
+};
+
+const downloadCsvFile = (rows, filename) => {
+  const csvContent = rows
+    .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function AdminQuestions() {
   const { user } = useContext(AuthContext);
   const isTeacher = user?.role === 'teacher';
+  const teacherAssignedSubjects = useMemo(() => sanitizeSubjectList(user?.subjects), [user?.subjects]);
   const [teacherView, setTeacherView] = useState(TEACHER_VIEW_OPTIONS.MINE);
   const [questions, setQuestions] = useState([]);
+  const [subjectCatalog, setSubjectCatalog] = useState([]);
+  const [subjectCatalogLoading, setSubjectCatalogLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editId, setEditId] = useState(null);
@@ -103,11 +204,24 @@ export default function AdminQuestions() {
   const [submitting, setSubmitting] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const initialImagePublicIdRef = useRef('');
+  const bulkUploadInputRef = useRef(null);
   const questionTextRef = useRef(null);
   const explanationRef = useRef(null);
   const optionRefs = useRef([]);
-
   const [form, setForm] = useState(createEmptyForm());
+
+  const availableSubjectCatalog = useMemo(
+    () => buildScopedSubjectCatalog(subjectCatalog, isTeacher, teacherAssignedSubjects),
+    [isTeacher, subjectCatalog, teacherAssignedSubjects]
+  );
+  const availableCourseOptions = useMemo(
+    () => Array.from(new Set(availableSubjectCatalog.map((subject) => String(subject.course || DEFAULT_COURSE)))).sort(),
+    [availableSubjectCatalog]
+  );
+  const availableSubjectOptionsForScope = useMemo(
+    () => availableSubjectCatalog.filter((subject) => Number(subject.year) === Number(form.year || 1) && String(subject.course || DEFAULT_COURSE) === String(form.course || DEFAULT_COURSE)),
+    [availableSubjectCatalog, form.course, form.year]
+  );
 
   const isOwnedByCurrentUser = (question) => {
     const ownerId = typeof question.createdBy === 'object'
@@ -134,34 +248,123 @@ export default function AdminQuestions() {
 
   useEffect(() => { load(); }, [isTeacher, teacherView]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSubjects = async () => {
+      setSubjectCatalogLoading(true);
+      try {
+        const response = await fetchSubjects({ includeInactive: false });
+        if (!isMounted) {
+          return;
+        }
+
+        setSubjectCatalog(response.subjects || []);
+      } catch (err) {
+        if (isMounted) {
+          setError(err?.response?.data?.message || err.message);
+        }
+      } finally {
+        if (isMounted) {
+          setSubjectCatalogLoading(false);
+        }
+      }
+    };
+
+    loadSubjects();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setForm((currentForm) => syncFormWithCatalog(currentForm, availableSubjectCatalog));
+  }, [availableSubjectCatalog]);
+
   const downloadSampleCSV = () => {
     const sampleData = [
-      ['questionText', 'optionA', 'optionB', 'optionC', 'optionD', 'correctAnswer', 'category', 'difficulty', 'marks', 'negativeMarks', 'explanation'],
-      ['What is 2+2?', '2', '3', '4', '5', '2', 'Aptitude', 'Easy', '1', '0.25', 'Basic arithmetic'],
-      ['What is the capital of France?', 'London', 'Berlin', 'Paris', 'Madrid', '2', 'Logical', 'Easy', '2', '0.5', 'Paris is the capital of France'],
-      ['Which data structure uses LIFO?', 'Queue', 'Stack', 'Array', 'Tree', '1', 'Technical', 'Medium', '3', '1', 'Stack follows Last In First Out principle']
+      ['questionText', 'optionA', 'optionB', 'optionC', 'optionD', 'correctAnswer', 'category', 'subject', 'topic', 'year', 'course', 'difficulty', 'marks', 'negativeMarks', 'explanation'],
+      ['What is 2+2?', '2', '3', '4', '5', '2', 'Aptitude', 'MATHS', 'Arithmetic', '1', 'GENERAL', 'Easy', '1', '0.25', 'Basic arithmetic'],
+      ['What is the capital of France?', 'London', 'Berlin', 'Paris', 'Madrid', '2', 'Logical', 'COMMUNICATION', 'General Awareness', '1', 'GENERAL', 'Easy', '2', '0.5', 'Paris is the capital of France'],
+      ['Which data structure uses LIFO?', 'Queue', 'Stack', 'Array', 'Tree', '1', 'Technical', 'DSA', 'Stack Basics', '2', 'CSE', 'Medium', '3', '1', 'Stack follows Last In First Out principle']
     ];
 
-    const csvContent = sampleData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sample_questions.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsvFile(sampleData, 'sample_questions.csv');
+  };
+
+  const clearBulkUploadInput = () => {
+    if (bulkUploadInputRef.current) {
+      bulkUploadInputRef.current.value = '';
+    }
+  };
+
+  const openBulkUploadPicker = () => {
+    if (bulkUploading) {
+      return;
+    }
+
+    bulkUploadInputRef.current?.click();
   };
 
   const handleFileUpload = async (file) => {
     setBulkResult(null);
+    setError(null);
     if (!file) return;
     setBulkUploading(true);
     try {
       const text = await file.text();
       let data;
+      const normalizedFileName = String(file.name || '').toLowerCase();
+      const validSubjectCodes = new Set(availableSubjectCatalog.map((subject) => String(subject.code || '').trim().toUpperCase()));
 
-      if (file.name.endsWith('.json')) {
-        data = JSON.parse(text);
+      if (normalizedFileName.endsWith('.json')) {
+        const parsedData = JSON.parse(text);
+        data = Array.isArray(parsedData) ? parsedData.map((row, index) => {
+          const normalizedQuestion = normalizeUploadedQuestion(row);
+
+          if (!normalizedQuestion.questionText || normalizedQuestion.questionText.length < 10) {
+            throw new Error(`Row ${index + 2}: Question text is required (min 10 chars)`);
+          }
+
+          if (!CATEGORY_OPTIONS.includes(normalizedQuestion.category)) {
+            throw new Error(`Row ${index + 2}: Category must be one of ${CATEGORY_OPTIONS.join(', ')}`);
+          }
+
+          if (!DIFFICULTY_OPTIONS.includes(normalizedQuestion.difficulty)) {
+            throw new Error(`Row ${index + 2}: Difficulty must be one of ${DIFFICULTY_OPTIONS.join(', ')}`);
+          }
+
+          if (!normalizedQuestion.subject) {
+            throw new Error(`Row ${index + 2}: Subject code is required`);
+          }
+
+          if (validSubjectCodes.size > 0 && !validSubjectCodes.has(normalizedQuestion.subject)) {
+            throw new Error(`Row ${index + 2}: Subject ${normalizedQuestion.subject} is not available in the active catalog`);
+          }
+
+          if (!normalizedQuestion.topic) {
+            throw new Error(`Row ${index + 2}: Topic is required`);
+          }
+
+          if (!YEAR_OPTIONS.includes(normalizedQuestion.year)) {
+            throw new Error(`Row ${index + 2}: Year must be between 1 and 4`);
+          }
+
+          if (normalizedQuestion.options.length < MIN_OPTIONS) {
+            throw new Error(`Row ${index + 2}: At least ${MIN_OPTIONS} options are required`);
+          }
+
+          if (!Number.isFinite(normalizedQuestion.marks) || normalizedQuestion.marks < 1) {
+            throw new Error(`Row ${index + 2}: Marks must be at least 1`);
+          }
+
+          if (!Number.isFinite(normalizedQuestion.negativeMarks) || normalizedQuestion.negativeMarks < 0) {
+            throw new Error(`Row ${index + 2}: Negative marks cannot be negative`);
+          }
+
+          return normalizedQuestion;
+        }) : [];
       } else {
         // Use papaparse for better CSV parsing
         const Papa = (await import('papaparse')).default;
@@ -181,7 +384,8 @@ export default function AdminQuestions() {
             throw new Error(`Row ${index + 2}: Question text is required (min 10 chars)`);
           }
 
-          const options = extractOptionsFromRow(row);
+          const normalizedQuestion = normalizeUploadedQuestion(row);
+          const options = normalizedQuestion.options;
 
           if (options.length < MIN_OPTIONS) {
             throw new Error(`Row ${index + 2}: At least ${MIN_OPTIONS} options are required`);
@@ -192,15 +396,51 @@ export default function AdminQuestions() {
             throw new Error(`Row ${index + 2}: Correct answer must be between 0 and ${options.length - 1}`);
           }
 
+          if (!normalizedQuestion.subject) {
+            throw new Error(`Row ${index + 2}: Subject code is required`);
+          }
+
+          if (validSubjectCodes.size > 0 && !validSubjectCodes.has(normalizedQuestion.subject)) {
+            throw new Error(`Row ${index + 2}: Subject ${normalizedQuestion.subject} is not available in the active catalog`);
+          }
+
+          if (!normalizedQuestion.topic) {
+            throw new Error(`Row ${index + 2}: Topic is required`);
+          }
+
+          if (!CATEGORY_OPTIONS.includes(normalizedQuestion.category)) {
+            throw new Error(`Row ${index + 2}: Category must be one of ${CATEGORY_OPTIONS.join(', ')}`);
+          }
+
+          if (!DIFFICULTY_OPTIONS.includes(normalizedQuestion.difficulty)) {
+            throw new Error(`Row ${index + 2}: Difficulty must be one of ${DIFFICULTY_OPTIONS.join(', ')}`);
+          }
+
+          if (!YEAR_OPTIONS.includes(normalizedQuestion.year)) {
+            throw new Error(`Row ${index + 2}: Year must be between 1 and 4`);
+          }
+
+          if (!Number.isFinite(normalizedQuestion.marks) || normalizedQuestion.marks < 1) {
+            throw new Error(`Row ${index + 2}: Marks must be at least 1`);
+          }
+
+          if (!Number.isFinite(normalizedQuestion.negativeMarks) || normalizedQuestion.negativeMarks < 0) {
+            throw new Error(`Row ${index + 2}: Negative marks cannot be negative`);
+          }
+
           return {
-            questionText: row.questionText.trim(),
+            questionText: normalizedQuestion.questionText,
             options: options.map(opt => opt.trim()),
             correctAnswer,
-            category: row.category || 'Aptitude',
-            difficulty: row.difficulty || 'Easy',
-            marks: Number(row.marks || 1),
-            negativeMarks: Number(row.negativeMarks || 0),
-            explanation: row.explanation || ''
+            category: normalizedQuestion.category,
+            subject: normalizedQuestion.subject,
+            topic: normalizedQuestion.topic,
+            year: normalizedQuestion.year,
+            course: normalizedQuestion.course,
+            difficulty: normalizedQuestion.difficulty,
+            marks: normalizedQuestion.marks,
+            negativeMarks: normalizedQuestion.negativeMarks,
+            explanation: normalizedQuestion.explanation
           };
         });
       }
@@ -212,11 +452,16 @@ export default function AdminQuestions() {
 
       const res = await bulkCreateQuestions(data);
       setBulkResult(res);
+      showToast(`Bulk upload created ${res.createdCount || 0} question(s).`, { type: 'success' });
       await load();
     } catch (err) {
-      setBulkResult({ error: err.message || String(err) });
+      const message = err?.response?.data?.message || err.message || String(err);
+      setError(message);
+      setBulkResult({ error: message });
+      showToast(message, { type: 'error' });
     } finally {
       setBulkUploading(false);
+      clearBulkUploadInput();
     }
   };
 
@@ -227,6 +472,8 @@ export default function AdminQuestions() {
     if (!form.questionText || form.questionText.trim().length < 5) return setError('Question text is required (min 5 chars)');
     if (!form.options || form.options.length < MIN_OPTIONS || form.options.some(o => !o || !o.trim())) return setError(`Provide at least ${MIN_OPTIONS} non-empty options`);
     if (form.correctAnswer < 0 || form.correctAnswer >= form.options.length) return setError('Select a valid correct answer');
+    if (!form.subject) return setError('Select a subject from the catalog');
+    if (!form.topic || !form.topic.trim()) return setError('Topic is required');
     if (!form.marks || form.marks < 1) return setError('Marks must be at least 1');
     if (imageUploading) return setError('Wait for the question image upload to finish.');
     setSubmitting(true);
@@ -237,7 +484,7 @@ export default function AdminQuestions() {
         await createQuestion(form);
       }
       initialImagePublicIdRef.current = '';
-      setForm(createEmptyForm());
+      setForm(createEmptyForm(availableSubjectCatalog));
       setEditId(null);
       setShowForm(false);
       await load();
@@ -266,6 +513,10 @@ export default function AdminQuestions() {
       options: q.options,
       correctAnswer: q.correctAnswer,
       category: q.category,
+      subject: q.subject || '',
+      topic: q.topic || 'General',
+      year: q.year || 1,
+      course: q.course || DEFAULT_COURSE,
       difficulty: q.difficulty,
       marks: q.marks,
       negativeMarks: q.negativeMarks || 0,
@@ -303,7 +554,7 @@ export default function AdminQuestions() {
     setShowForm(false);
     setEditId(null);
     initialImagePublicIdRef.current = '';
-    setForm(createEmptyForm());
+    setForm(createEmptyForm(availableSubjectCatalog));
   };
 
   const handleImageUpload = async (file) => {
@@ -451,7 +702,7 @@ export default function AdminQuestions() {
             : 'Manage Questions'}
         </h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={async () => {
+          <button type="button" onClick={async () => {
             if (showForm) {
               await resetForm();
               return;
@@ -460,15 +711,21 @@ export default function AdminQuestions() {
             setShowForm(true);
             setEditId(null);
             initialImagePublicIdRef.current = '';
-            setForm(createEmptyForm());
+            setForm(createEmptyForm(availableSubjectCatalog));
           }}>
             {showForm ? 'Cancel' : 'Add Question'}
           </button>
-          <label style={{ display: 'inline-block' }}>
-            <input type="file" accept=".csv,.json" style={{ display: 'none' }} onChange={e => handleFileUpload(e.target.files[0])} />
-            <button className="button-secondary">📤 Bulk Upload</button>
-          </label>
-          <button className="button-secondary" onClick={downloadSampleCSV}>📥 Download Sample CSV</button>
+          <input
+            ref={bulkUploadInputRef}
+            type="file"
+            accept=".csv,.json,application/json,text/csv"
+            style={{ display: 'none' }}
+            onChange={(event) => handleFileUpload(event.target.files?.[0])}
+          />
+          <button type="button" className="button-secondary" onClick={openBulkUploadPicker} disabled={bulkUploading}>
+            {bulkUploading ? 'Uploading…' : '📤 Bulk Upload'}
+          </button>
+          <button type="button" className="button-secondary" onClick={downloadSampleCSV}>📥 Download Sample CSV</button>
         </div>
       </div>
 
@@ -477,6 +734,55 @@ export default function AdminQuestions() {
       {showForm && (
         <form onSubmit={handleSubmit} className="card">
           <h3 style={{ marginTop: 0 }}>{editId ? 'Edit' : 'Create'} Question</h3>
+
+          <div className="grid">
+            <div className="form-group">
+              <label>Course</label>
+              <select
+                value={form.course}
+                onChange={(e) => setForm((currentForm) => syncFormWithCatalog({ ...currentForm, course: e.target.value }, availableSubjectCatalog))}
+                disabled={subjectCatalogLoading || availableCourseOptions.length === 0}
+              >
+                {availableCourseOptions.map((course) => (
+                  <option key={course} value={course}>{course}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Year</label>
+              <select
+                value={form.year}
+                onChange={(e) => setForm((currentForm) => syncFormWithCatalog({ ...currentForm, year: Number(e.target.value) }, availableSubjectCatalog))}
+                disabled={subjectCatalogLoading}
+              >
+                {YEAR_OPTIONS.map((year) => (
+                  <option key={year} value={year}>Year {year}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Subject</label>
+              <select
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                disabled={subjectCatalogLoading || availableSubjectOptionsForScope.length === 0}
+              >
+                {availableSubjectOptionsForScope.map((subject) => (
+                  <option key={`${subject.code}-${subject.year}-${subject.course}`} value={subject.code}>{subject.code} - {subject.name}</option>
+                ))}
+              </select>
+              {availableSubjectOptionsForScope.length === 0 && (
+                <small className="text-muted">No subject catalog entries are available for this course and year.</small>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label>Topic</label>
+              <input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} required />
+            </div>
+          </div>
 
           <div className="form-group">
             <label>Question Text</label>
@@ -557,18 +863,14 @@ export default function AdminQuestions() {
             <div className="form-group">
               <label>Category</label>
               <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                <option>Aptitude</option>
-                <option>Logical</option>
-                <option>Technical</option>
+                {CATEGORY_OPTIONS.map((category) => <option key={category} value={category}>{category}</option>)}
               </select>
             </div>
 
             <div className="form-group">
               <label>Difficulty</label>
               <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })}>
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
+                {DIFFICULTY_OPTIONS.map((difficulty) => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
               </select>
             </div>
 
@@ -657,7 +959,8 @@ export default function AdminQuestions() {
             <thead>
               <tr>
                 <th>Question</th>
-                {isTeacher && <th>Subject</th>}
+                <th>Subject</th>
+                <th>Scope</th>
                 <th>Category</th>
                 <th>Difficulty</th>
                 <th>Marks</th>
@@ -678,7 +981,14 @@ export default function AdminQuestions() {
                     {q.explanation && <div className="text-small" style={{ marginTop: '4px', color: 'var(--text-muted)' }}>Explanation: {q.explanation.substring(0, 40)}...</div>}
                     <div className="text-small" style={{ marginTop: '4px', color: 'var(--text-muted)' }}>{q.options.length} options</div>
                   </td>
-                  {isTeacher && <td><span className="badge badge-info">{q.subject || 'General'}</span></td>}
+                  <td>
+                    <span className="badge badge-info">{q.subject || 'General'}</span>
+                    {q.topic && <div className="text-small" style={{ marginTop: '4px', color: 'var(--text-muted)' }}>{q.topic}</div>}
+                  </td>
+                  <td>
+                    <div className="text-small">{q.course || DEFAULT_COURSE}</div>
+                    <div className="text-small" style={{ color: 'var(--text-muted)' }}>Year {q.year || 1}</div>
+                  </td>
                   <td><span className="badge badge-info">{q.category}</span></td>
                   <td>
                     <span className={`badge badge-${q.difficulty === 'Easy' ? 'success' : q.difficulty === 'Medium' ? 'warning' : 'danger'}`}>

@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const Exam = require('../models/exam.model');
 const ExamAttempt = require('../models/examAttempt.model');
 const Question = require('../models/question.model');
+const AcademicClass = require('../models/academicClass.model');
 const { ensureResourceOwnerOrAdmin, getManagedSubjects, isTeacher } = require('../utils/permissions');
 const { isExamVisibleToStudent, normalizeExamAudience, validateTeacherExamAudience } = require('../utils/examAudience');
+const { assertSubjectExistsForScope } = require('../utils/subjects');
 
 const sortLatestExamsFirst = (left, right) => {
   const leftCreatedAt = new Date(left?.createdAt || left?.startDate || 0).getTime();
@@ -89,6 +91,11 @@ const normalizeQuestionIds = (questions = []) => {
   ));
 };
 
+const resolveAudienceClassNames = (audience) => Array.from(new Set([
+  ...(Array.isArray(audience?.assignedClasses) ? audience.assignedClasses : []),
+  ...(Array.isArray(audience?.assignedLabBatches) ? audience.assignedLabBatches.map((entry) => entry.className) : []),
+].filter(Boolean)));
+
 const buildExamPayload = async (res, source, user) => {
   const title = typeof source.title === 'string' ? source.title.trim() : '';
   const subject = typeof source.subject === 'string' ? source.subject.trim() : '';
@@ -114,6 +121,25 @@ const buildExamPayload = async (res, source, user) => {
     failValidation(res, 'One or more selected questions do not exist');
   }
 
+  if (subject !== 'Mixed') {
+    const audienceClassNames = resolveAudienceClassNames(audience);
+
+    if (audienceClassNames.length > 0) {
+      const classes = await AcademicClass.find({ name: { $in: audienceClassNames } }).select('name year course');
+      if (classes.length !== audienceClassNames.length) {
+        failValidation(res, 'One or more selected classes do not exist');
+      }
+
+      for (const academicClass of classes) {
+        try {
+          await assertSubjectExistsForScope({ code: subject, year: academicClass.year, course: academicClass.course });
+        } catch (error) {
+          failValidation(res, `Subject ${subject} is not available for class ${academicClass.name} (${academicClass.course} year ${academicClass.year})`);
+        }
+      }
+    }
+  }
+
   if (isTeacher(user)) {
     const teacherSubjects = getManagedSubjects(user);
     if (teacherSubjects.length === 0) {
@@ -124,7 +150,7 @@ const buildExamPayload = async (res, source, user) => {
       failValidation(res, 'Teachers can only create exams for assigned subjects');
     }
 
-    const hasQuestionOutsideSelectedSubject = questions.some((question) => question.subject !== subject);
+    const hasQuestionOutsideSelectedSubject = subject !== 'Mixed' && questions.some((question) => question.subject !== subject);
     if (hasQuestionOutsideSelectedSubject) {
       failValidation(res, 'Teachers can only create exams with questions from the selected assigned subject');
     }

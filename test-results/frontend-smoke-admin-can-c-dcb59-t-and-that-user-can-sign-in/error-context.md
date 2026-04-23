@@ -1,0 +1,803 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - heading "📝 AI MCQ Exam" [level=1] [ref=e6] [cursor=pointer]
+      - navigation [ref=e7]:
+        - button "Dashboard" [ref=e8] [cursor=pointer]
+        - button "Users" [ref=e9] [cursor=pointer]
+        - button "Classes" [ref=e10] [cursor=pointer]
+        - button "Subjects" [ref=e11] [cursor=pointer]
+        - button "Questions" [ref=e12] [cursor=pointer]
+        - button "Exams" [ref=e13] [cursor=pointer]
+        - button "Reports" [ref=e14] [cursor=pointer]
+        - button "Profile" [ref=e15] [cursor=pointer]
+      - generic [ref=e16]:
+        - generic [ref=e17]: ADM001
+        - generic [ref=e18]: admin
+        - button "Logout" [ref=e19] [cursor=pointer]
+  - main [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Manage Users" [level=2] [ref=e23]
+        - generic [ref=e24]: Admin panel
+      - generic [ref=e25]:
+        - heading "Create Account - Student" [level=3] [ref=e26]
+        - generic [ref=e27]:
+          - button "Create Account - Student" [ref=e28] [cursor=pointer]:
+            - strong [ref=e29]: Create Account - Student
+          - button "Create Account - Teacher" [ref=e30] [cursor=pointer]:
+            - strong [ref=e31]: Create Account - Teacher
+          - button "Create Account - Admin" [ref=e32] [cursor=pointer]:
+            - strong [ref=e33]: Create Account - Admin
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - generic [ref=e37] [cursor=pointer]: First Name
+              - textbox "First Name" [ref=e38]:
+                - /placeholder: e.g., Alex
+                - text: Playwright
+            - generic [ref=e39]:
+              - generic [ref=e40] [cursor=pointer]: Last Name
+              - textbox "Last Name" [ref=e41]:
+                - /placeholder: e.g., Johnson
+                - text: Student
+            - generic [ref=e42]:
+              - generic [ref=e43] [cursor=pointer]: Email
+              - textbox "Email" [ref=e44]:
+                - /placeholder: user@example.com
+                - text: playwright_1774961532707@example.com
+            - generic [ref=e45]:
+              - generic [ref=e46] [cursor=pointer]: Enrollment Number
+              - textbox "Enrollment Number" [ref=e47]:
+                - /placeholder: Optional auto-generated
+                - text: PW1774961532707
+            - generic [ref=e48]:
+              - generic [ref=e49] [cursor=pointer]: Temporary Password
+              - textbox "Temporary Password" [active] [ref=e50]:
+                - /placeholder: Set an initial password
+                - text: Password123!
+            - generic [ref=e52] [cursor=pointer]:
+              - checkbox "Send password setup email" [ref=e53]
+              - text: Send password setup email
+          - button "Create Account - Student" [ref=e55] [cursor=pointer]
+      - generic [ref=e56]:
+        - heading "Bulk Upload - Student" [level=3] [ref=e57]
+        - paragraph [ref=e58]: Upload a file of student accounts. Class assignment can be done later.
+        - generic [ref=e59]:
+          - button "Bulk Upload - Student" [ref=e60] [cursor=pointer]:
+            - strong [ref=e61]: Bulk Upload - Student
+          - button "Bulk Upload - Teacher" [ref=e62] [cursor=pointer]:
+            - strong [ref=e63]: Bulk Upload - Teacher
+          - button "Bulk Upload - Admin" [ref=e64] [cursor=pointer]:
+            - strong [ref=e65]: Bulk Upload - Admin
+        - heading "Bulk Import Users" [level=3] [ref=e67]
+        - paragraph [ref=e68]: Upload a CSV or JSON file to create student accounts in bulk. You can leave the class empty and assign it later. Maximum 500 users per upload.
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71] [cursor=pointer]: Temporary Password
+            - textbox "Temporary Password" [ref=e72]:
+              - /placeholder: Shared password for imported users
+          - generic [ref=e74] [cursor=pointer]:
+            - checkbox "Email each imported user a password setup link" [checked] [ref=e75]
+            - text: Email each imported user a password setup link
+          - generic [ref=e76]:
+            - button "Download Sample CSV" [ref=e77] [cursor=pointer]
+            - button "Choose CSV or JSON" [ref=e78] [cursor=pointer]
+            - button "Start Student Import" [disabled] [ref=e79]
+            - button "Clear Selection" [disabled] [ref=e80]
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - button "Students (58)" [ref=e83] [cursor=pointer]
+          - button "Teachers (6)" [ref=e84] [cursor=pointer]
+          - button "Admins (1)" [ref=e85] [cursor=pointer]
+        - table [ref=e86]:
+          - rowgroup [ref=e87]:
+            - row "Enrollment ID Name Email Role Class Status Actions" [ref=e88]:
+              - columnheader "Enrollment ID" [ref=e89]
+              - columnheader "Name" [ref=e90]
+              - columnheader "Email" [ref=e91]
+              - columnheader "Role" [ref=e92]
+              - columnheader "Class" [ref=e93]
+              - columnheader "Status" [ref=e94]
+              - columnheader "Actions" [ref=e95]
+          - rowgroup [ref=e96]:
+            - row "ADT23SOCB1234 Yash Shah yashah1707@gmail.com student Class not set ✓ Active Open actions for Yash Shah" [ref=e97]:
+              - cell "ADT23SOCB1234" [ref=e98]
+              - cell "Yash Shah" [ref=e99]:
+                - strong [ref=e100]: Yash Shah
+              - cell "yashah1707@gmail.com" [ref=e101]
+              - cell "student" [ref=e102]:
+                - generic [ref=e103]: student
+              - cell "Class not set" [ref=e104]
+              - cell "✓ Active" [ref=e105]:
+                - generic [ref=e106]: ✓ Active
+              - cell "Open actions for Yash Shah" [ref=e107]:
+                - button "Open actions for Yash Shah" [ref=e109] [cursor=pointer]: ⋮
+            - row "ADT23SOCB101010 bhavik shah bhashah@hotmail.com student TY-AIA-9 ✓ Active Open actions for bhavik shah" [ref=e110]:
+              - cell "ADT23SOCB101010" [ref=e111]
+              - cell "bhavik shah" [ref=e112]:
+                - strong [ref=e113]: bhavik shah
+              - cell "bhashah@hotmail.com" [ref=e114]
+              - cell "student" [ref=e115]:
+                - generic [ref=e116]: student
+              - cell "TY-AIA-9" [ref=e117]
+              - cell "✓ Active" [ref=e118]:
+                - generic [ref=e119]: ✓ Active
+              - cell "Open actions for bhavik shah" [ref=e120]:
+                - button "Open actions for bhavik shah" [ref=e122] [cursor=pointer]: ⋮
+            - row "ADT23SOCB012345 Ranjeet skull skullonfire9999@gmail.com student Class not set ✓ Active Open actions for Ranjeet skull" [ref=e123]:
+              - cell "ADT23SOCB012345" [ref=e124]
+              - cell "Ranjeet skull" [ref=e125]:
+                - strong [ref=e126]: Ranjeet skull
+              - cell "skullonfire9999@gmail.com" [ref=e127]
+              - cell "student" [ref=e128]:
+                - generic [ref=e129]: student
+              - cell "Class not set" [ref=e130]
+              - cell "✓ Active" [ref=e131]:
+                - generic [ref=e132]: ✓ Active
+              - cell "Open actions for Ranjeet skull" [ref=e133]:
+                - button "Open actions for Ranjeet skull" [ref=e135] [cursor=pointer]: ⋮
+            - row "TEST001 Test Student user@example.com student TY-AIA-9 ✓ Active Open actions for Test Student" [ref=e136]:
+              - cell "TEST001" [ref=e137]
+              - cell "Test Student" [ref=e138]:
+                - strong [ref=e139]: Test Student
+              - cell "user@example.com" [ref=e140]
+              - cell "student" [ref=e141]:
+                - generic [ref=e142]: student
+              - cell "TY-AIA-9" [ref=e143]
+              - cell "✓ Active" [ref=e144]:
+                - generic [ref=e145]: ✓ Active
+              - cell "Open actions for Test Student" [ref=e146]:
+                - button "Open actions for Test Student" [ref=e148] [cursor=pointer]: ⋮
+            - row "DEB1771224416173 Debug User 1771224416173 debug_1771224416173@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771224416173" [ref=e149]:
+              - cell "DEB1771224416173" [ref=e150]
+              - cell "Debug User 1771224416173" [ref=e151]:
+                - strong [ref=e152]: Debug User 1771224416173
+              - cell "debug_1771224416173@test.com" [ref=e153]
+              - cell "student" [ref=e154]:
+                - generic [ref=e155]: student
+              - cell "TY-AIA-9" [ref=e156]
+              - cell "✓ Active" [ref=e157]:
+                - generic [ref=e158]: ✓ Active
+              - cell "Open actions for Debug User 1771224416173" [ref=e159]:
+                - button "Open actions for Debug User 1771224416173" [ref=e161] [cursor=pointer]: ⋮
+            - row "DEB1771224538081 Debug User 1771224538081 debug_1771224538081@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771224538081" [ref=e162]:
+              - cell "DEB1771224538081" [ref=e163]
+              - cell "Debug User 1771224538081" [ref=e164]:
+                - strong [ref=e165]: Debug User 1771224538081
+              - cell "debug_1771224538081@test.com" [ref=e166]
+              - cell "student" [ref=e167]:
+                - generic [ref=e168]: student
+              - cell "TY-AIA-9" [ref=e169]
+              - cell "✓ Active" [ref=e170]:
+                - generic [ref=e171]: ✓ Active
+              - cell "Open actions for Debug User 1771224538081" [ref=e172]:
+                - button "Open actions for Debug User 1771224538081" [ref=e174] [cursor=pointer]: ⋮
+            - row "DEB1771224633789 Debug User 1771224633789 debug_1771224633789@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771224633789" [ref=e175]:
+              - cell "DEB1771224633789" [ref=e176]
+              - cell "Debug User 1771224633789" [ref=e177]:
+                - strong [ref=e178]: Debug User 1771224633789
+              - cell "debug_1771224633789@test.com" [ref=e179]
+              - cell "student" [ref=e180]:
+                - generic [ref=e181]: student
+              - cell "TY-AIA-9" [ref=e182]
+              - cell "✓ Active" [ref=e183]:
+                - generic [ref=e184]: ✓ Active
+              - cell "Open actions for Debug User 1771224633789" [ref=e185]:
+                - button "Open actions for Debug User 1771224633789" [ref=e187] [cursor=pointer]: ⋮
+            - row "DEB1771224666035 Debug User 1771224666035 debug_1771224666035@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771224666035" [ref=e188]:
+              - cell "DEB1771224666035" [ref=e189]
+              - cell "Debug User 1771224666035" [ref=e190]:
+                - strong [ref=e191]: Debug User 1771224666035
+              - cell "debug_1771224666035@test.com" [ref=e192]
+              - cell "student" [ref=e193]:
+                - generic [ref=e194]: student
+              - cell "TY-AIA-9" [ref=e195]
+              - cell "✓ Active" [ref=e196]:
+                - generic [ref=e197]: ✓ Active
+              - cell "Open actions for Debug User 1771224666035" [ref=e198]:
+                - button "Open actions for Debug User 1771224666035" [ref=e200] [cursor=pointer]: ⋮
+            - row "DEB1771224976250 Debug User 1771224976250 debug_1771224976250@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771224976250" [ref=e201]:
+              - cell "DEB1771224976250" [ref=e202]
+              - cell "Debug User 1771224976250" [ref=e203]:
+                - strong [ref=e204]: Debug User 1771224976250
+              - cell "debug_1771224976250@test.com" [ref=e205]
+              - cell "student" [ref=e206]:
+                - generic [ref=e207]: student
+              - cell "TY-AIA-9" [ref=e208]
+              - cell "✓ Active" [ref=e209]:
+                - generic [ref=e210]: ✓ Active
+              - cell "Open actions for Debug User 1771224976250" [ref=e211]:
+                - button "Open actions for Debug User 1771224976250" [ref=e213] [cursor=pointer]: ⋮
+            - row "DEB1771225033845 Debug User 1771225033845 debug_1771225033845@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771225033845" [ref=e214]:
+              - cell "DEB1771225033845" [ref=e215]
+              - cell "Debug User 1771225033845" [ref=e216]:
+                - strong [ref=e217]: Debug User 1771225033845
+              - cell "debug_1771225033845@test.com" [ref=e218]
+              - cell "student" [ref=e219]:
+                - generic [ref=e220]: student
+              - cell "TY-AIA-9" [ref=e221]
+              - cell "✓ Active" [ref=e222]:
+                - generic [ref=e223]: ✓ Active
+              - cell "Open actions for Debug User 1771225033845" [ref=e224]:
+                - button "Open actions for Debug User 1771225033845" [ref=e226] [cursor=pointer]: ⋮
+            - row "DEB1771225348945 Debug User 1771225348945 debug_1771225348945@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771225348945" [ref=e227]:
+              - cell "DEB1771225348945" [ref=e228]
+              - cell "Debug User 1771225348945" [ref=e229]:
+                - strong [ref=e230]: Debug User 1771225348945
+              - cell "debug_1771225348945@test.com" [ref=e231]
+              - cell "student" [ref=e232]:
+                - generic [ref=e233]: student
+              - cell "TY-AIA-9" [ref=e234]
+              - cell "✓ Active" [ref=e235]:
+                - generic [ref=e236]: ✓ Active
+              - cell "Open actions for Debug User 1771225348945" [ref=e237]:
+                - button "Open actions for Debug User 1771225348945" [ref=e239] [cursor=pointer]: ⋮
+            - row "DEB1771225591359 Debug User 1771225591359 debug_1771225591359@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771225591359" [ref=e240]:
+              - cell "DEB1771225591359" [ref=e241]
+              - cell "Debug User 1771225591359" [ref=e242]:
+                - strong [ref=e243]: Debug User 1771225591359
+              - cell "debug_1771225591359@test.com" [ref=e244]
+              - cell "student" [ref=e245]:
+                - generic [ref=e246]: student
+              - cell "TY-AIA-9" [ref=e247]
+              - cell "✓ Active" [ref=e248]:
+                - generic [ref=e249]: ✓ Active
+              - cell "Open actions for Debug User 1771225591359" [ref=e250]:
+                - button "Open actions for Debug User 1771225591359" [ref=e252] [cursor=pointer]: ⋮
+            - row "DEB1771225660377 Debug User 1771225660377 debug_1771225660377@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771225660377" [ref=e253]:
+              - cell "DEB1771225660377" [ref=e254]
+              - cell "Debug User 1771225660377" [ref=e255]:
+                - strong [ref=e256]: Debug User 1771225660377
+              - cell "debug_1771225660377@test.com" [ref=e257]
+              - cell "student" [ref=e258]:
+                - generic [ref=e259]: student
+              - cell "TY-AIA-9" [ref=e260]
+              - cell "✓ Active" [ref=e261]:
+                - generic [ref=e262]: ✓ Active
+              - cell "Open actions for Debug User 1771225660377" [ref=e263]:
+                - button "Open actions for Debug User 1771225660377" [ref=e265] [cursor=pointer]: ⋮
+            - row "DEB1771225837722 Debug User 1771225837722 debug_1771225837722@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771225837722" [ref=e266]:
+              - cell "DEB1771225837722" [ref=e267]
+              - cell "Debug User 1771225837722" [ref=e268]:
+                - strong [ref=e269]: Debug User 1771225837722
+              - cell "debug_1771225837722@test.com" [ref=e270]
+              - cell "student" [ref=e271]:
+                - generic [ref=e272]: student
+              - cell "TY-AIA-9" [ref=e273]
+              - cell "✓ Active" [ref=e274]:
+                - generic [ref=e275]: ✓ Active
+              - cell "Open actions for Debug User 1771225837722" [ref=e276]:
+                - button "Open actions for Debug User 1771225837722" [ref=e278] [cursor=pointer]: ⋮
+            - row "DEMO001 Demo Student demo@student.com student TY-AIA-9 ✓ Active Open actions for Demo Student" [ref=e279]:
+              - cell "DEMO001" [ref=e280]
+              - cell "Demo Student" [ref=e281]:
+                - strong [ref=e282]: Demo Student
+              - cell "demo@student.com" [ref=e283]
+              - cell "student" [ref=e284]:
+                - generic [ref=e285]: student
+              - cell "TY-AIA-9" [ref=e286]
+              - cell "✓ Active" [ref=e287]:
+                - generic [ref=e288]: ✓ Active
+              - cell "Open actions for Demo Student" [ref=e289]:
+                - button "Open actions for Demo Student" [ref=e291] [cursor=pointer]: ⋮
+            - row "DEB1771226504409 Debug User 1771226504409 debug_1771226504409@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771226504409" [ref=e292]:
+              - cell "DEB1771226504409" [ref=e293]
+              - cell "Debug User 1771226504409" [ref=e294]:
+                - strong [ref=e295]: Debug User 1771226504409
+              - cell "debug_1771226504409@test.com" [ref=e296]
+              - cell "student" [ref=e297]:
+                - generic [ref=e298]: student
+              - cell "TY-AIA-9" [ref=e299]
+              - cell "✓ Active" [ref=e300]:
+                - generic [ref=e301]: ✓ Active
+              - cell "Open actions for Debug User 1771226504409" [ref=e302]:
+                - button "Open actions for Debug User 1771226504409" [ref=e304] [cursor=pointer]: ⋮
+            - row "DEB1771226569153 Debug User 1771226569153 debug_1771226569153@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771226569153" [ref=e305]:
+              - cell "DEB1771226569153" [ref=e306]
+              - cell "Debug User 1771226569153" [ref=e307]:
+                - strong [ref=e308]: Debug User 1771226569153
+              - cell "debug_1771226569153@test.com" [ref=e309]
+              - cell "student" [ref=e310]:
+                - generic [ref=e311]: student
+              - cell "TY-AIA-9" [ref=e312]
+              - cell "✓ Active" [ref=e313]:
+                - generic [ref=e314]: ✓ Active
+              - cell "Open actions for Debug User 1771226569153" [ref=e315]:
+                - button "Open actions for Debug User 1771226569153" [ref=e317] [cursor=pointer]: ⋮
+            - row "DEB1771226635871 Debug User 1771226635871 debug_1771226635871@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771226635871" [ref=e318]:
+              - cell "DEB1771226635871" [ref=e319]
+              - cell "Debug User 1771226635871" [ref=e320]:
+                - strong [ref=e321]: Debug User 1771226635871
+              - cell "debug_1771226635871@test.com" [ref=e322]
+              - cell "student" [ref=e323]:
+                - generic [ref=e324]: student
+              - cell "TY-AIA-9" [ref=e325]
+              - cell "✓ Active" [ref=e326]:
+                - generic [ref=e327]: ✓ Active
+              - cell "Open actions for Debug User 1771226635871" [ref=e328]:
+                - button "Open actions for Debug User 1771226635871" [ref=e330] [cursor=pointer]: ⋮
+            - row "DEB1771228777214 Debug User 1771228777214 debug_1771228777214@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1771228777214" [ref=e331]:
+              - cell "DEB1771228777214" [ref=e332]
+              - cell "Debug User 1771228777214" [ref=e333]:
+                - strong [ref=e334]: Debug User 1771228777214
+              - cell "debug_1771228777214@test.com" [ref=e335]
+              - cell "student" [ref=e336]:
+                - generic [ref=e337]: student
+              - cell "TY-AIA-9" [ref=e338]
+              - cell "✓ Active" [ref=e339]:
+                - generic [ref=e340]: ✓ Active
+              - cell "Open actions for Debug User 1771228777214" [ref=e341]:
+                - button "Open actions for Debug User 1771228777214" [ref=e343] [cursor=pointer]: ⋮
+            - row "STU001 Student User student@example.com student E2E-BATCH ✓ Active Open actions for Student User" [ref=e344]:
+              - cell "STU001" [ref=e345]
+              - cell "Student User" [ref=e346]:
+                - strong [ref=e347]: Student User
+              - cell "student@example.com" [ref=e348]
+              - cell "student" [ref=e349]:
+                - generic [ref=e350]: student
+              - cell "E2E-BATCH" [ref=e351]
+              - cell "✓ Active" [ref=e352]:
+                - generic [ref=e353]: ✓ Active
+              - cell "Open actions for Student User" [ref=e354]:
+                - button "Open actions for Student User" [ref=e356] [cursor=pointer]: ⋮
+            - row "ADT23SOCB789 Yash Shah wewrites27@gmail.com student TY-AIA-9 ✓ Active Open actions for Yash Shah" [ref=e357]:
+              - cell "ADT23SOCB789" [ref=e358]
+              - cell "Yash Shah" [ref=e359]:
+                - strong [ref=e360]: Yash Shah
+              - cell "wewrites27@gmail.com" [ref=e361]
+              - cell "student" [ref=e362]:
+                - generic [ref=e363]: student
+              - cell "TY-AIA-9" [ref=e364]
+              - cell "✓ Active" [ref=e365]:
+                - generic [ref=e366]: ✓ Active
+              - cell "Open actions for Yash Shah" [ref=e367]:
+                - button "Open actions for Yash Shah" [ref=e369] [cursor=pointer]: ⋮
+            - row "001111010101 GRP Pathak ganesh.pathak@mituniversity.edu student TY-AIA-9 ✓ Active Open actions for GRP Pathak" [ref=e370]:
+              - cell "001111010101" [ref=e371]
+              - cell "GRP Pathak" [ref=e372]:
+                - strong [ref=e373]: GRP Pathak
+              - cell "ganesh.pathak@mituniversity.edu" [ref=e374]
+              - cell "student" [ref=e375]:
+                - generic [ref=e376]: student
+              - cell "TY-AIA-9" [ref=e377]
+              - cell "✓ Active" [ref=e378]:
+                - generic [ref=e379]: ✓ Active
+              - cell "Open actions for GRP Pathak" [ref=e380]:
+                - button "Open actions for GRP Pathak" [ref=e382] [cursor=pointer]: ⋮
+            - row "ADT23SOCB1050 shourya shah shouryashahunofficial@gmail.com student TY-AIA-9 ✓ Active Open actions for shourya shah" [ref=e383]:
+              - cell "ADT23SOCB1050" [ref=e384]
+              - cell "shourya shah" [ref=e385]:
+                - strong [ref=e386]: shourya shah
+              - cell "shouryashahunofficial@gmail.com" [ref=e387]
+              - cell "student" [ref=e388]:
+                - generic [ref=e389]: student
+              - cell "TY-AIA-9" [ref=e390]
+              - cell "✓ Active" [ref=e391]:
+                - generic [ref=e392]: ✓ Active
+              - cell "Open actions for shourya shah" [ref=e393]:
+                - button "Open actions for shourya shah" [ref=e395] [cursor=pointer]: ⋮
+            - row "ADT23SOCB2712 john jain riddhidjain@gmail.com student TY-AIA-9 ✓ Active Open actions for john jain" [ref=e396]:
+              - cell "ADT23SOCB2712" [ref=e397]
+              - cell "john jain" [ref=e398]:
+                - strong [ref=e399]: john jain
+              - cell "riddhidjain@gmail.com" [ref=e400]
+              - cell "student" [ref=e401]:
+                - generic [ref=e402]: student
+              - cell "TY-AIA-9" [ref=e403]
+              - cell "✓ Active" [ref=e404]:
+                - generic [ref=e405]: ✓ Active
+              - cell "Open actions for john jain" [ref=e406]:
+                - button "Open actions for john jain" [ref=e408] [cursor=pointer]: ⋮
+            - row "AUTOP97BSWF4PPU Smoke Student smoke+1773938624802@example.com student TY-AIA-9 ✓ Active Open actions for Smoke Student" [ref=e409]:
+              - cell "AUTOP97BSWF4PPU" [ref=e410]
+              - cell "Smoke Student" [ref=e411]:
+                - strong [ref=e412]: Smoke Student
+              - cell "smoke+1773938624802@example.com" [ref=e413]
+              - cell "student" [ref=e414]:
+                - generic [ref=e415]: student
+              - cell "TY-AIA-9" [ref=e416]
+              - cell "✓ Active" [ref=e417]:
+                - generic [ref=e418]: ✓ Active
+              - cell "Open actions for Smoke Student" [ref=e419]:
+                - button "Open actions for Smoke Student" [ref=e421] [cursor=pointer]: ⋮
+            - row "AUTOPC7KRQA8SLO Smoke Student smoke+1773938765171@example.com student TY-AIA-9 ✓ Active Open actions for Smoke Student" [ref=e422]:
+              - cell "AUTOPC7KRQA8SLO" [ref=e423]
+              - cell "Smoke Student" [ref=e424]:
+                - strong [ref=e425]: Smoke Student
+              - cell "smoke+1773938765171@example.com" [ref=e426]
+              - cell "student" [ref=e427]:
+                - generic [ref=e428]: student
+              - cell "TY-AIA-9" [ref=e429]
+              - cell "✓ Active" [ref=e430]:
+                - generic [ref=e431]: ✓ Active
+              - cell "Open actions for Smoke Student" [ref=e432]:
+                - button "Open actions for Smoke Student" [ref=e434] [cursor=pointer]: ⋮
+            - row "DEB1773938909599 Debug User 1773938909599 debug_1773938909599@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1773938909599" [ref=e435]:
+              - cell "DEB1773938909599" [ref=e436]
+              - cell "Debug User 1773938909599" [ref=e437]:
+                - strong [ref=e438]: Debug User 1773938909599
+              - cell "debug_1773938909599@test.com" [ref=e439]
+              - cell "student" [ref=e440]:
+                - generic [ref=e441]: student
+              - cell "TY-AIA-9" [ref=e442]
+              - cell "✓ Active" [ref=e443]:
+                - generic [ref=e444]: ✓ Active
+              - cell "Open actions for Debug User 1773938909599" [ref=e445]:
+                - button "Open actions for Debug User 1773938909599" [ref=e447] [cursor=pointer]: ⋮
+            - row "DEB1773940116047 Debug User 1773940116047 debug_1773940116047@test.com student TY-AIA-9 ✓ Active Open actions for Debug User 1773940116047" [ref=e448]:
+              - cell "DEB1773940116047" [ref=e449]
+              - cell "Debug User 1773940116047" [ref=e450]:
+                - strong [ref=e451]: Debug User 1773940116047
+              - cell "debug_1773940116047@test.com" [ref=e452]
+              - cell "student" [ref=e453]:
+                - generic [ref=e454]: student
+              - cell "TY-AIA-9" [ref=e455]
+              - cell "✓ Active" [ref=e456]:
+                - generic [ref=e457]: ✓ Active
+              - cell "Open actions for Debug User 1773940116047" [ref=e458]:
+                - button "Open actions for Debug User 1773940116047" [ref=e460] [cursor=pointer]: ⋮
+            - row "PW1774004788312 Playwright Student playwright_1774004788312@example.com student TY-AIA-9 ✓ Active Open actions for Playwright Student" [ref=e461]:
+              - cell "PW1774004788312" [ref=e462]
+              - cell "Playwright Student" [ref=e463]:
+                - strong [ref=e464]: Playwright Student
+              - cell "playwright_1774004788312@example.com" [ref=e465]
+              - cell "student" [ref=e466]:
+                - generic [ref=e467]: student
+              - cell "TY-AIA-9" [ref=e468]
+              - cell "✓ Active" [ref=e469]:
+                - generic [ref=e470]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e471]:
+                - button "Open actions for Playwright Student" [ref=e473] [cursor=pointer]: ⋮
+            - row "PW1774004931772 Playwright Student playwright_1774004931772@example.com student TY-AIA-9 ✓ Active Open actions for Playwright Student" [ref=e474]:
+              - cell "PW1774004931772" [ref=e475]
+              - cell "Playwright Student" [ref=e476]:
+                - strong [ref=e477]: Playwright Student
+              - cell "playwright_1774004931772@example.com" [ref=e478]
+              - cell "student" [ref=e479]:
+                - generic [ref=e480]: student
+              - cell "TY-AIA-9" [ref=e481]
+              - cell "✓ Active" [ref=e482]:
+                - generic [ref=e483]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e484]:
+                - button "Open actions for Playwright Student" [ref=e486] [cursor=pointer]: ⋮
+            - row "PW1774006662082 Playwright Student playwright_1774006662082@example.com student TY-AIA-9 ✓ Active Open actions for Playwright Student" [ref=e487]:
+              - cell "PW1774006662082" [ref=e488]
+              - cell "Playwright Student" [ref=e489]:
+                - strong [ref=e490]: Playwright Student
+              - cell "playwright_1774006662082@example.com" [ref=e491]
+              - cell "student" [ref=e492]:
+                - generic [ref=e493]: student
+              - cell "TY-AIA-9" [ref=e494]
+              - cell "✓ Active" [ref=e495]:
+                - generic [ref=e496]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e497]:
+                - button "Open actions for Playwright Student" [ref=e499] [cursor=pointer]: ⋮
+            - row "PW1774007023283 Playwright Student playwright_1774007023283@example.com student TY-AIA-9 ✓ Active Open actions for Playwright Student" [ref=e500]:
+              - cell "PW1774007023283" [ref=e501]
+              - cell "Playwright Student" [ref=e502]:
+                - strong [ref=e503]: Playwright Student
+              - cell "playwright_1774007023283@example.com" [ref=e504]
+              - cell "student" [ref=e505]:
+                - generic [ref=e506]: student
+              - cell "TY-AIA-9" [ref=e507]
+              - cell "✓ Active" [ref=e508]:
+                - generic [ref=e509]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e510]:
+                - button "Open actions for Playwright Student" [ref=e512] [cursor=pointer]: ⋮
+            - row "PW1774007401141 Playwright Student playwright_1774007401141@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e513]:
+              - cell "PW1774007401141" [ref=e514]
+              - cell "Playwright Student" [ref=e515]:
+                - strong [ref=e516]: Playwright Student
+              - cell "playwright_1774007401141@example.com" [ref=e517]
+              - cell "student" [ref=e518]:
+                - generic [ref=e519]: student
+              - cell "Class not set" [ref=e520]
+              - cell "✓ Active" [ref=e521]:
+                - generic [ref=e522]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e523]:
+                - button "Open actions for Playwright Student" [ref=e525] [cursor=pointer]: ⋮
+            - row "PW1774008190072 Playwright Student playwright_1774008190072@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e526]:
+              - cell "PW1774008190072" [ref=e527]
+              - cell "Playwright Student" [ref=e528]:
+                - strong [ref=e529]: Playwright Student
+              - cell "playwright_1774008190072@example.com" [ref=e530]
+              - cell "student" [ref=e531]:
+                - generic [ref=e532]: student
+              - cell "Class not set" [ref=e533]
+              - cell "✓ Active" [ref=e534]:
+                - generic [ref=e535]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e536]:
+                - button "Open actions for Playwright Student" [ref=e538] [cursor=pointer]: ⋮
+            - row "PW1774008946213 Playwright Student playwright_1774008946213@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e539]:
+              - cell "PW1774008946213" [ref=e540]
+              - cell "Playwright Student" [ref=e541]:
+                - strong [ref=e542]: Playwright Student
+              - cell "playwright_1774008946213@example.com" [ref=e543]
+              - cell "student" [ref=e544]:
+                - generic [ref=e545]: student
+              - cell "Class not set" [ref=e546]
+              - cell "✓ Active" [ref=e547]:
+                - generic [ref=e548]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e549]:
+                - button "Open actions for Playwright Student" [ref=e551] [cursor=pointer]: ⋮
+            - row "PW1774009729210 Playwright Student playwright_1774009729210@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e552]:
+              - cell "PW1774009729210" [ref=e553]
+              - cell "Playwright Student" [ref=e554]:
+                - strong [ref=e555]: Playwright Student
+              - cell "playwright_1774009729210@example.com" [ref=e556]
+              - cell "student" [ref=e557]:
+                - generic [ref=e558]: student
+              - cell "Class not set" [ref=e559]
+              - cell "✓ Active" [ref=e560]:
+                - generic [ref=e561]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e562]:
+                - button "Open actions for Playwright Student" [ref=e564] [cursor=pointer]: ⋮
+            - row "ADT231234 Ash Shaw shahyash170705@gmail.com student TY-AIA-9 ✓ Active Open actions for Ash Shaw" [ref=e565]:
+              - cell "ADT231234" [ref=e566]
+              - cell "Ash Shaw" [ref=e567]:
+                - strong [ref=e568]: Ash Shaw
+              - cell "shahyash170705@gmail.com" [ref=e569]
+              - cell "student" [ref=e570]:
+                - generic [ref=e571]: student
+              - cell "TY-AIA-9" [ref=e572]
+              - cell "✓ Active" [ref=e573]:
+                - generic [ref=e574]: ✓ Active
+              - cell "Open actions for Ash Shaw" [ref=e575]:
+                - button "Open actions for Ash Shaw" [ref=e577] [cursor=pointer]: ⋮
+            - row "PW1774012026074 Playwright Student playwright_1774012026074@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e578]:
+              - cell "PW1774012026074" [ref=e579]
+              - cell "Playwright Student" [ref=e580]:
+                - strong [ref=e581]: Playwright Student
+              - cell "playwright_1774012026074@example.com" [ref=e582]
+              - cell "student" [ref=e583]:
+                - generic [ref=e584]: student
+              - cell "Class not set" [ref=e585]
+              - cell "✓ Active" [ref=e586]:
+                - generic [ref=e587]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e588]:
+                - button "Open actions for Playwright Student" [ref=e590] [cursor=pointer]: ⋮
+            - row "PW1774012594343 Playwright Student playwright_1774012594343@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e591]:
+              - cell "PW1774012594343" [ref=e592]
+              - cell "Playwright Student" [ref=e593]:
+                - strong [ref=e594]: Playwright Student
+              - cell "playwright_1774012594343@example.com" [ref=e595]
+              - cell "student" [ref=e596]:
+                - generic [ref=e597]: student
+              - cell "Class not set" [ref=e598]
+              - cell "✓ Active" [ref=e599]:
+                - generic [ref=e600]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e601]:
+                - button "Open actions for Playwright Student" [ref=e603] [cursor=pointer]: ⋮
+            - row "PW1774013602576 Playwright Student playwright_1774013602576@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e604]:
+              - cell "PW1774013602576" [ref=e605]
+              - cell "Playwright Student" [ref=e606]:
+                - strong [ref=e607]: Playwright Student
+              - cell "playwright_1774013602576@example.com" [ref=e608]
+              - cell "student" [ref=e609]:
+                - generic [ref=e610]: student
+              - cell "Class not set" [ref=e611]
+              - cell "✓ Active" [ref=e612]:
+                - generic [ref=e613]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e614]:
+                - button "Open actions for Playwright Student" [ref=e616] [cursor=pointer]: ⋮
+            - row "PW1774013655711 Playwright Student playwright_1774013655711@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e617]:
+              - cell "PW1774013655711" [ref=e618]
+              - cell "Playwright Student" [ref=e619]:
+                - strong [ref=e620]: Playwright Student
+              - cell "playwright_1774013655711@example.com" [ref=e621]
+              - cell "student" [ref=e622]:
+                - generic [ref=e623]: student
+              - cell "Class not set" [ref=e624]
+              - cell "✓ Active" [ref=e625]:
+                - generic [ref=e626]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e627]:
+                - button "Open actions for Playwright Student" [ref=e629] [cursor=pointer]: ⋮
+            - row "PW1774013796438 Playwright Student playwright_1774013796438@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e630]:
+              - cell "PW1774013796438" [ref=e631]
+              - cell "Playwright Student" [ref=e632]:
+                - strong [ref=e633]: Playwright Student
+              - cell "playwright_1774013796438@example.com" [ref=e634]
+              - cell "student" [ref=e635]:
+                - generic [ref=e636]: student
+              - cell "Class not set" [ref=e637]
+              - cell "✓ Active" [ref=e638]:
+                - generic [ref=e639]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e640]:
+                - button "Open actions for Playwright Student" [ref=e642] [cursor=pointer]: ⋮
+            - row "BULKOK1774013801800 Bulk Success bulk_partial_1774013801800@example.com student Class not set ✓ Active Open actions for Bulk Success" [ref=e643]:
+              - cell "BULKOK1774013801800" [ref=e644]
+              - cell "Bulk Success" [ref=e645]:
+                - strong [ref=e646]: Bulk Success
+              - cell "bulk_partial_1774013801800@example.com" [ref=e647]
+              - cell "student" [ref=e648]:
+                - generic [ref=e649]: student
+              - cell "Class not set" [ref=e650]
+              - cell "✓ Active" [ref=e651]:
+                - generic [ref=e652]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e653]:
+                - button "Open actions for Bulk Success" [ref=e655] [cursor=pointer]: ⋮
+            - row "PW1774013937163 Playwright Student playwright_1774013937163@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e656]:
+              - cell "PW1774013937163" [ref=e657]
+              - cell "Playwright Student" [ref=e658]:
+                - strong [ref=e659]: Playwright Student
+              - cell "playwright_1774013937163@example.com" [ref=e660]
+              - cell "student" [ref=e661]:
+                - generic [ref=e662]: student
+              - cell "Class not set" [ref=e663]
+              - cell "✓ Active" [ref=e664]:
+                - generic [ref=e665]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e666]:
+                - button "Open actions for Playwright Student" [ref=e668] [cursor=pointer]: ⋮
+            - row "BULKOK1774013942735 Bulk Success bulk_partial_1774013942735@example.com student Class not set ✓ Active Open actions for Bulk Success" [ref=e669]:
+              - cell "BULKOK1774013942735" [ref=e670]
+              - cell "Bulk Success" [ref=e671]:
+                - strong [ref=e672]: Bulk Success
+              - cell "bulk_partial_1774013942735@example.com" [ref=e673]
+              - cell "student" [ref=e674]:
+                - generic [ref=e675]: student
+              - cell "Class not set" [ref=e676]
+              - cell "✓ Active" [ref=e677]:
+                - generic [ref=e678]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e679]:
+                - button "Open actions for Bulk Success" [ref=e681] [cursor=pointer]: ⋮
+            - row "PW1774016978661 Playwright Student playwright_1774016978661@example.com student Class not set ✓ Active Open actions for Playwright Student" [ref=e682]:
+              - cell "PW1774016978661" [ref=e683]
+              - cell "Playwright Student" [ref=e684]:
+                - strong [ref=e685]: Playwright Student
+              - cell "playwright_1774016978661@example.com" [ref=e686]
+              - cell "student" [ref=e687]:
+                - generic [ref=e688]: student
+              - cell "Class not set" [ref=e689]
+              - cell "✓ Active" [ref=e690]:
+                - generic [ref=e691]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e692]:
+                - button "Open actions for Playwright Student" [ref=e694] [cursor=pointer]: ⋮
+            - row "BULKOK1774016985033 Bulk Success bulk_partial_1774016985033@example.com student Class not set ✓ Active Open actions for Bulk Success" [ref=e695]:
+              - cell "BULKOK1774016985033" [ref=e696]
+              - cell "Bulk Success" [ref=e697]:
+                - strong [ref=e698]: Bulk Success
+              - cell "bulk_partial_1774016985033@example.com" [ref=e699]
+              - cell "student" [ref=e700]:
+                - generic [ref=e701]: student
+              - cell "Class not set" [ref=e702]
+              - cell "✓ Active" [ref=e703]:
+                - generic [ref=e704]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e705]:
+                - button "Open actions for Bulk Success" [ref=e707] [cursor=pointer]: ⋮
+            - row "PW1774247287535 Playwright Student playwright_1774247287535@example.com student PW-BATCH-A ✓ Active Open actions for Playwright Student" [ref=e708]:
+              - cell "PW1774247287535" [ref=e709]
+              - cell "Playwright Student" [ref=e710]:
+                - strong [ref=e711]: Playwright Student
+              - cell "playwright_1774247287535@example.com" [ref=e712]
+              - cell "student" [ref=e713]:
+                - generic [ref=e714]: student
+              - cell "PW-BATCH-A" [ref=e715]
+              - cell "✓ Active" [ref=e716]:
+                - generic [ref=e717]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e718]:
+                - button "Open actions for Playwright Student" [ref=e720] [cursor=pointer]: ⋮
+            - row "BULKOK1774247292732 Bulk Success bulk_partial_1774247292732@example.com student BATCH-A ✓ Active Open actions for Bulk Success" [ref=e721]:
+              - cell "BULKOK1774247292732" [ref=e722]
+              - cell "Bulk Success" [ref=e723]:
+                - strong [ref=e724]: Bulk Success
+              - cell "bulk_partial_1774247292732@example.com" [ref=e725]
+              - cell "student" [ref=e726]:
+                - generic [ref=e727]: student
+              - cell "BATCH-A" [ref=e728]
+              - cell "✓ Active" [ref=e729]:
+                - generic [ref=e730]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e731]:
+                - button "Open actions for Bulk Success" [ref=e733] [cursor=pointer]: ⋮
+            - row "PW1774247881142 Playwright Student playwright_1774247881142@example.com student PW-BATCH-A ✓ Active Open actions for Playwright Student" [ref=e734]:
+              - cell "PW1774247881142" [ref=e735]
+              - cell "Playwright Student" [ref=e736]:
+                - strong [ref=e737]: Playwright Student
+              - cell "playwright_1774247881142@example.com" [ref=e738]
+              - cell "student" [ref=e739]:
+                - generic [ref=e740]: student
+              - cell "PW-BATCH-A" [ref=e741]
+              - cell "✓ Active" [ref=e742]:
+                - generic [ref=e743]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e744]:
+                - button "Open actions for Playwright Student" [ref=e746] [cursor=pointer]: ⋮
+            - row "BULKOK1774247886665 Bulk Success bulk_partial_1774247886665@example.com student BATCH-A ✓ Active Open actions for Bulk Success" [ref=e747]:
+              - cell "BULKOK1774247886665" [ref=e748]
+              - cell "Bulk Success" [ref=e749]:
+                - strong [ref=e750]: Bulk Success
+              - cell "bulk_partial_1774247886665@example.com" [ref=e751]
+              - cell "student" [ref=e752]:
+                - generic [ref=e753]: student
+              - cell "BATCH-A" [ref=e754]
+              - cell "✓ Active" [ref=e755]:
+                - generic [ref=e756]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e757]:
+                - button "Open actions for Bulk Success" [ref=e759] [cursor=pointer]: ⋮
+            - row "PW1774247931091 Playwright Student playwright_1774247931091@example.com student PW-BATCH-A ✓ Active Open actions for Playwright Student" [ref=e760]:
+              - cell "PW1774247931091" [ref=e761]
+              - cell "Playwright Student" [ref=e762]:
+                - strong [ref=e763]: Playwright Student
+              - cell "playwright_1774247931091@example.com" [ref=e764]
+              - cell "student" [ref=e765]:
+                - generic [ref=e766]: student
+              - cell "PW-BATCH-A" [ref=e767]
+              - cell "✓ Active" [ref=e768]:
+                - generic [ref=e769]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e770]:
+                - button "Open actions for Playwright Student" [ref=e772] [cursor=pointer]: ⋮
+            - row "BULKOK1774247936651 Bulk Success bulk_partial_1774247936651@example.com student BATCH-A ✓ Active Open actions for Bulk Success" [ref=e773]:
+              - cell "BULKOK1774247936651" [ref=e774]
+              - cell "Bulk Success" [ref=e775]:
+                - strong [ref=e776]: Bulk Success
+              - cell "bulk_partial_1774247936651@example.com" [ref=e777]
+              - cell "student" [ref=e778]:
+                - generic [ref=e779]: student
+              - cell "BATCH-A" [ref=e780]
+              - cell "✓ Active" [ref=e781]:
+                - generic [ref=e782]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e783]:
+                - button "Open actions for Bulk Success" [ref=e785] [cursor=pointer]: ⋮
+            - row "PW1774248469705 Playwright Student playwright_1774248469705@example.com student PW-BATCH-A ✓ Active Open actions for Playwright Student" [ref=e786]:
+              - cell "PW1774248469705" [ref=e787]
+              - cell "Playwright Student" [ref=e788]:
+                - strong [ref=e789]: Playwright Student
+              - cell "playwright_1774248469705@example.com" [ref=e790]
+              - cell "student" [ref=e791]:
+                - generic [ref=e792]: student
+              - cell "PW-BATCH-A" [ref=e793]
+              - cell "✓ Active" [ref=e794]:
+                - generic [ref=e795]: ✓ Active
+              - cell "Open actions for Playwright Student" [ref=e796]:
+                - button "Open actions for Playwright Student" [ref=e798] [cursor=pointer]: ⋮
+            - row "BULKOK1774248474950 Bulk Success bulk_partial_1774248474950@example.com student BATCH-A ✓ Active Open actions for Bulk Success" [ref=e799]:
+              - cell "BULKOK1774248474950" [ref=e800]
+              - cell "Bulk Success" [ref=e801]:
+                - strong [ref=e802]: Bulk Success
+              - cell "bulk_partial_1774248474950@example.com" [ref=e803]
+              - cell "student" [ref=e804]:
+                - generic [ref=e805]: student
+              - cell "BATCH-A" [ref=e806]
+              - cell "✓ Active" [ref=e807]:
+                - generic [ref=e808]: ✓ Active
+              - cell "Open actions for Bulk Success" [ref=e809]:
+                - button "Open actions for Bulk Success" [ref=e811] [cursor=pointer]: ⋮
+            - row "ADTSOCB1001 rose kara sshahstudy05@gmail.com student SOC-11 ✓ Active Open actions for rose kara" [ref=e812]:
+              - cell "ADTSOCB1001" [ref=e813]
+              - cell "rose kara" [ref=e814]:
+                - strong [ref=e815]: rose kara
+              - cell "sshahstudy05@gmail.com" [ref=e816]
+              - cell "student" [ref=e817]:
+                - generic [ref=e818]: student
+              - cell "SOC-11" [ref=e819]
+              - cell "✓ Active" [ref=e820]:
+                - generic [ref=e821]: ✓ Active
+              - cell "Open actions for rose kara" [ref=e822]:
+                - button "Open actions for rose kara" [ref=e824] [cursor=pointer]: ⋮
+            - row "ADT23SOCB9999 abcd xyz abcdxyz123@example.com student 2026-2030 ✓ Active Open actions for abcd xyz" [ref=e825]:
+              - cell "ADT23SOCB9999" [ref=e826]
+              - cell "abcd xyz" [ref=e827]:
+                - strong [ref=e828]: abcd xyz
+              - cell "abcdxyz123@example.com" [ref=e829]
+              - cell "student" [ref=e830]:
+                - generic [ref=e831]: student
+              - cell "2026-2030" [ref=e832]
+              - cell "✓ Active" [ref=e833]:
+                - generic [ref=e834]: ✓ Active
+              - cell "Open actions for abcd xyz" [ref=e835]:
+                - button "Open actions for abcd xyz" [ref=e837] [cursor=pointer]: ⋮
+            - row "STU002 Diya Shah diya@example.com student TY-AIA-9 ✓ Active Open actions for Diya Shah" [ref=e838]:
+              - cell "STU002" [ref=e839]
+              - cell "Diya Shah" [ref=e840]:
+                - strong [ref=e841]: Diya Shah
+              - cell "diya@example.com" [ref=e842]
+              - cell "student" [ref=e843]:
+                - generic [ref=e844]: student
+              - cell "TY-AIA-9" [ref=e845]
+              - cell "✓ Active" [ref=e846]:
+                - generic [ref=e847]: ✓ Active
+              - cell "Open actions for Diya Shah" [ref=e848]:
+                - button "Open actions for Diya Shah" [ref=e850] [cursor=pointer]: ⋮
+```

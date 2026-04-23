@@ -16,6 +16,7 @@ const StudentAnalytics = lazy(() => import('./pages/StudentAnalytics'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'));
 const AdminClasses = lazy(() => import('./pages/AdminClasses'));
+const AdminSubjects = lazy(() => import('./pages/AdminSubjects'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminQuestions = lazy(() => import('./pages/AdminQuestions'));
 const AdminExams = lazy(() => import('./pages/AdminExams'));
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/admin/dashboard" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>)} />
             <Route path="/admin/users" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminUsers /></ProtectedRoute>)} />
             <Route path="/admin/classes" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminClasses /></ProtectedRoute>)} />
+            <Route path="/admin/subjects" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminSubjects /></ProtectedRoute>)} />
             <Route path="/admin/questions" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminQuestions /></ProtectedRoute>)} />
             <Route path="/admin/exams" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminExams /></ProtectedRoute>)} />
             <Route path="/admin/reports" element={renderRoute(<ProtectedRoute roles={["admin"]}><AdminReports /></ProtectedRoute>)} />

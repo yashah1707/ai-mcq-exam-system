@@ -71,6 +71,7 @@ app.use('/api/reports', require('./routes/report.route'));
 app.use('/api/adaptive', require('./routes/adaptiveTest.route'));
 app.use('/api/batch-analytics', require('./routes/batchAnalytics.route')); // New route registration
 app.use('/api/classes', require('./routes/class.route'));
+app.use('/api/subjects', require('./routes/subject.route'));
 
 app.get("/", (req, res) => {
   res.send("AI MCQ Examination System API Running 🚀");

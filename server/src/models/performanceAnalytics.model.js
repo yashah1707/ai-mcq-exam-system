@@ -8,7 +8,6 @@ const performanceAnalyticsSchema = new mongoose.Schema({
     },
     subject: {
         type: String,
-        enum: ['DBMS', 'OS', 'CN', 'DSA', 'Aptitude', 'Logical', 'Verbal'],
         required: true
     },
     topic: {

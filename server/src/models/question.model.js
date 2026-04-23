@@ -32,9 +32,20 @@ const questionSchema = new mongoose.Schema({
   // New fields for AI Analysis
   subject: {
     type: String,
-    enum: ['DBMS', 'OS', 'CN', 'DSA', 'Aptitude', 'Logical', 'Verbal'],
     required: true,
     default: 'Aptitude' // Default for migration
+  },
+  year: {
+    type: Number,
+    min: 1,
+    max: 4,
+    default: 1,
+  },
+  course: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    default: 'GENERAL',
   },
   topic: {
     type: String,
