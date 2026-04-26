@@ -24,10 +24,11 @@ npm install
 npm run dev
 ```
 
-Worker (analytics job processor)
+Workers (analytics + email job processors)
 
 ```bash
-npm run worker
+npm run worker:analytics
+npm run worker:email
 ```
 
 Client (frontend)

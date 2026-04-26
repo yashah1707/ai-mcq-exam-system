@@ -1,5 +1,5 @@
 const express = require('express');
-const { createUser, bulkCreateUsers, getUsers, updateUserRole, updateUserDetails, toggleUserStatus, sendUserPasswordLink } = require('../controllers/user.controller');
+const { createUser, bulkCreateUsers, getUsers, updateUserRole, updateUserDetails, toggleUserStatus, sendUserPasswordLink, deleteUser } = require('../controllers/user.controller');
 const { verifyToken, authorizeRoles } = require('../middleware/auth');
 const { registerValidation } = require('../middleware/validators/auth.validator');
 const { bulkCreateUsersValidation } = require('../middleware/validators/user.validator');
@@ -16,5 +16,6 @@ router.post('/:id/send-password-link', adminEmailActionRateLimiter, sendUserPass
 router.put('/:id', updateUserDetails);
 router.put('/:id/role', updateUserRole);
 router.put('/:id/status', toggleUserStatus);
+router.delete('/:id', deleteUser);
 
 module.exports = router;

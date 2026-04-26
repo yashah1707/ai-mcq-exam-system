@@ -610,4 +610,40 @@ const toggleUserStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { createUser, bulkCreateUsers, getUsers, updateUserRole, updateUserDetails, toggleUserStatus, sendUserPasswordLink };
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (String(req.user._id) === String(id)) {
+      res.status(400);
+      throw new Error('You cannot delete your own account');
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    // Clean up related data
+    const ExamAttempt = require('../models/examAttempt.model');
+    const PerformanceAnalytics = require('../models/performanceAnalytics.model');
+    const AnalyticsJob = require('../models/analyticsJob.model');
+    const EmailJob = require('../models/emailJob.model');
+
+    await Promise.all([
+      ExamAttempt.deleteMany({ user: user._id }),
+      PerformanceAnalytics.deleteMany({ userId: user._id }),
+      AnalyticsJob.deleteMany({ userId: user._id }),
+      EmailJob.deleteMany({ recipient: user.email }),
+    ]);
+
+    await User.findByIdAndDelete(id);
+
+    res.json({ message: `User ${user.name} (${user.email}) has been permanently deleted.` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { createUser, bulkCreateUsers, getUsers, updateUserRole, updateUserDetails, toggleUserStatus, sendUserPasswordLink, deleteUser };
