@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     try {
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
     } catch (e) {
       // ignore storage cleanup errors
     }
@@ -63,6 +64,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const data = await loginApi(credentials);
     setUser(data.user);
+    // Persist the JWT so api.js can attach it after page refresh
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
     setAuthReady(true);
     return data;
   };

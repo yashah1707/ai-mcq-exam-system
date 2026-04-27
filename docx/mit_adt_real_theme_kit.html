@@ -1,0 +1,588 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+
+:root {
+  --mit-purple-dark: #4B0082;
+  --mit-purple-mid:  #6A0DAD;
+  --mit-purple-light:#8B1FCF;
+  --mit-violet-soft: #9B30E0;
+  --mit-pink-stop:   #C0359E;
+  --mit-magenta:     #D4267A;
+  --mit-orange:      #E8631A;
+  --mit-amber:       #F0960A;
+  --mit-gold:        #F5AB00;
+  --mit-btn-bg:      #D9601A;
+  --mit-btn-hover:   #C25215;
+  --mit-white:       #FFFFFF;
+  --mit-off-white:   #F8F6FF;
+  --mit-card-bg:     #FFFFFF;
+  --mit-text:        #1A1A2E;
+  --mit-text-muted:  #5A5A7A;
+  --mit-border:      rgba(255,255,255,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: #F0EDF8;
+  color: var(--mit-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.page { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+/* Section headers */
+.sec-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--mit-text-muted);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding-bottom: 6px;
+  margin: 24px 0 14px;
+}
+.sec-head:first-child { margin-top: 0; }
+
+/* ── GRADIENTS PANEL ── */
+.grad-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.grad-chip {
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+.grad-swatch { height: 56px; width: 100%; }
+.grad-meta {
+  background: white;
+  padding: 8px 10px;
+  border: 0.5px solid rgba(0,0,0,0.08);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+.grad-name { font-weight: 700; font-size: 12px; color: #222; }
+.grad-stops { font-size: 10px; font-family: monospace; color: #666; margin-top: 2px; line-height: 1.6; }
+
+/* ── COLOR TOKENS ── */
+.token-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.token-card {
+  border-radius: 8px; overflow: hidden;
+  border: 0.5px solid rgba(0,0,0,0.08);
+}
+.token-dot { height: 40px; }
+.token-info { background: white; padding: 6px 8px; }
+.token-label { font-size: 11px; font-weight: 700; color: #222; }
+.token-hex { font-size: 9px; font-family: monospace; color: #888; }
+.token-role { font-size: 9px; color: #aaa; margin-top: 1px; }
+
+/* ── LIVE COMPONENT DEMOS ── */
+.demo-card {
+  background: white;
+  border-radius: 12px;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.demo-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #888;
+  padding: 8px 14px 4px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.07);
+}
+.demo-body { padding: 14px; }
+
+/* NAVBAR */
+.nav-demo {
+  background: linear-gradient(90deg, #4B0082 0%, #6A0DAD 40%, #9B30E0 70%, #D4267A 100%);
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: center; gap: 8px; }
+.nav-logo-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; color: white;
+}
+.nav-brand { color: white; line-height: 1.2; }
+.nav-brand .name { font-weight: 800; font-size: 13px; }
+.nav-brand .sub  { font-size: 8px; opacity: 0.75; letter-spacing: .04em; }
+.nav-links { display: flex; gap: 2px; }
+.nav-link {
+  color: rgba(255,255,255,0.85);
+  font-size: 10px; font-weight: 600;
+  padding: 4px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.nav-link:hover { background: rgba(255,255,255,0.15); }
+.nav-pills { display: flex; gap: 5px; }
+.pill {
+  font-size: 9px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  cursor: pointer;
+}
+.pill-teal    { background: #00D4C8; color: #003D3B; }
+.pill-red     { background: #E8361A; color: white; }
+.pill-green   { background: #28A745; color: white; }
+.pill-purple  { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); }
+
+/* HERO gradient */
+.hero-demo {
+  background: linear-gradient(135deg, #C0359E 0%, #E85A28 55%, #F5AB00 100%);
+  padding: 28px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-demo::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px,
+    transparent 1px, transparent 16px
+  );
+}
+.hero-content { position: relative; }
+.hero-h { font-size: 22px; font-weight: 800; color: white; line-height: 1.15; }
+.hero-h span { display: block; font-size: 16px; font-weight: 500; opacity: 0.9; }
+.hero-btn {
+  display: inline-block;
+  margin-top: 12px;
+  background: #1A1A2E;
+  color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 7px 16px; border-radius: 20px;
+  opacity: 0.9;
+}
+
+/* STATS */
+.stats-demo {
+  background: linear-gradient(90deg, #C0359E 0%, #E8631A 50%, #F5AB00 100%);
+  padding: 16px 20px;
+  display: flex; gap: 0;
+}
+.stat-item {
+  flex: 1;
+  text-align: center;
+  color: white;
+  padding: 0 12px;
+}
+.stat-item + .stat-item {
+  border-left: 1px solid rgba(255,255,255,0.3);
+}
+.stat-num  { font-size: 28px; font-weight: 800; line-height: 1; }
+.stat-sub  { font-size: 10px; font-weight: 600; opacity: 0.85; margin-top: 3px; letter-spacing: .04em; }
+
+/* PROGRAM CARDS */
+.prog-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.prog-card {
+  flex: 1 1 160px;
+  background: white;
+  border-radius: 10px;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  padding: 14px;
+}
+.prog-card.active {
+  background: linear-gradient(135deg, #E8631A 0%, #C0359E 100%);
+  border: none;
+}
+.prog-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.prog-icon-outline { border: 1.5px solid #D9601A; }
+.prog-icon-fill    { background: rgba(255,255,255,0.25); }
+.prog-icon svg     { width: 18px; height: 18px; }
+.prog-name  { font-size: 12px; font-weight: 800; color: #1A1A2E; margin-bottom: 4px; }
+.prog-name.w  { color: white; }
+.prog-list  { font-size: 10px; color: #666; line-height: 1.8; }
+.prog-list.w  { color: rgba(255,255,255,0.85); }
+.prog-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+/* BUTTONS */
+.btn-orange {
+  background: linear-gradient(90deg, #D9601A 0%, #C04E12 100%);
+  color: white;
+  font-size: 10px; font-weight: 700;
+  padding: 5px 12px; border-radius: 20px;
+  border: none; cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-orange:hover { opacity: 0.88; }
+.btn-orange-outline {
+  background: transparent;
+  color: #D9601A;
+  font-size: 10px; font-weight: 700;
+  padding: 5px 12px; border-radius: 20px;
+  border: 1.5px solid #D9601A; cursor: pointer;
+  transition: all .15s;
+}
+.btn-orange-outline.w { color: white; border-color: white; }
+.btn-orange-outline:hover { background: #D9601A; color: white; }
+
+/* BUTTONS SHOWCASE */
+.btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn-purple-grad {
+  background: linear-gradient(90deg, #6A0DAD 0%, #9B30E0 100%);
+  color: white; font-size: 11px; font-weight: 700;
+  padding: 8px 18px; border-radius: 24px; border: none; cursor: pointer;
+}
+.btn-orange-grad {
+  background: linear-gradient(90deg, #D9601A 0%, #E88A10 100%);
+  color: white; font-size: 11px; font-weight: 700;
+  padding: 8px 18px; border-radius: 24px; border: none; cursor: pointer;
+}
+.btn-outline-purple {
+  background: transparent; color: #6A0DAD;
+  font-size: 11px; font-weight: 700;
+  padding: 7px 17px; border-radius: 24px;
+  border: 1.5px solid #6A0DAD; cursor: pointer;
+}
+.btn-dark {
+  background: #1A1A2E; color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 8px 18px; border-radius: 24px; border: none; cursor: pointer;
+}
+.btn-teal-pill {
+  background: #00D4C8; color: #003D3B;
+  font-size: 11px; font-weight: 700;
+  padding: 8px 16px; border-radius: 24px; border: none; cursor: pointer;
+}
+
+/* NEWS HEADING style */
+.news-head {
+  font-size: 26px; font-weight: 800; line-height: 1.1;
+  color: var(--mit-text);
+}
+.news-head .underline-bar {
+  display: flex; gap: 5px; margin-top: 5px;
+}
+.bar { height: 3px; border-radius: 2px; }
+.bar-purple { background: #6A0DAD; width: 36px; }
+.bar-orange { background: #E8631A; width: 22px; }
+.bar-green  { background: #28A745; width: 22px; }
+.bar-blue   { background: #2080E0; width: 22px; }
+
+/* FAB bar */
+.fab-bar {
+  display: flex; justify-content: flex-end; gap: 8px; padding: 10px 0;
+}
+.fab-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 24px;
+  font-size: 11px; font-weight: 700;
+  border: none; cursor: pointer;
+}
+.fab-enquire {
+  background: linear-gradient(90deg, #6A0DAD 0%, #9B30E0 100%);
+  color: white;
+}
+.fab-apply {
+  background: linear-gradient(90deg, #D9601A 0%, #E88A10 100%);
+  color: white;
+}
+
+/* TYPOGRAPHY */
+.type-row { display: flex; flex-direction: column; gap: 8px; }
+.t-sample { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+.t-label  { font-size: 9px; font-family: monospace; color: #aaa; min-width: 120px; flex-shrink: 0; }
+
+/* RAINBOW ACCENT LINE */
+.rainbow-line {
+  height: 3px;
+  background: linear-gradient(90deg, #9B30E0 0%, #C0359E 25%, #E8631A 55%, #F5AB00 100%);
+  border-radius: 2px;
+  margin: 10px 0 14px;
+  max-width: 60px;
+}
+
+</style>
+
+<div class="page">
+
+  <!-- GRADIENTS -->
+  <div class="sec-head">Background & hero gradients</div>
+  <div class="grad-row">
+    <div class="grad-chip">
+      <div class="grad-swatch" style="background: linear-gradient(135deg, #4B0082 0%, #6A0DAD 35%, #9B30E0 65%, #C0359E 100%)"></div>
+      <div class="grad-meta">
+        <div class="grad-name">Nav / Header BG</div>
+        <div class="grad-stops">#4B0082 → #6A0DAD<br>#9B30E0 → #C0359E</div>
+      </div>
+    </div>
+    <div class="grad-chip">
+      <div class="grad-swatch" style="background: linear-gradient(135deg, #C0359E 0%, #E85A28 55%, #F5AB00 100%)"></div>
+      <div class="grad-meta">
+        <div class="grad-name">Hero Slide / Banner</div>
+        <div class="grad-stops">#C0359E → #E85A28<br>#F5AB00 (warm end)</div>
+      </div>
+    </div>
+    <div class="grad-chip">
+      <div class="grad-swatch" style="background: linear-gradient(90deg, #C0359E 0%, #E8631A 50%, #F5AB00 100%)"></div>
+      <div class="grad-meta">
+        <div class="grad-name">Stats / Milestone Bar</div>
+        <div class="grad-stops">#C0359E → #E8631A<br>→ #F5AB00 (horizontal)</div>
+      </div>
+    </div>
+    <div class="grad-chip">
+      <div class="grad-swatch" style="background: linear-gradient(135deg, #E8631A 0%, #C0359E 100%)"></div>
+      <div class="grad-meta">
+        <div class="grad-name">Active Program Card</div>
+        <div class="grad-stops">#E8631A → #C0359E<br>(diagonal, card accent)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLOUR TOKENS -->
+  <div class="sec-head">Color tokens</div>
+  <div class="token-grid">
+    <div class="token-card">
+      <div class="token-dot" style="background:#4B0082"></div>
+      <div class="token-info"><div class="token-label">Purple Dark</div><div class="token-hex">#4B0082</div><div class="token-role">Nav bg start</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#6A0DAD"></div>
+      <div class="token-info"><div class="token-label">Purple Mid</div><div class="token-hex">#6A0DAD</div><div class="token-role">Primary brand</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#9B30E0"></div>
+      <div class="token-info"><div class="token-label">Violet</div><div class="token-hex">#9B30E0</div><div class="token-role">Gradient mid</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#C0359E"></div>
+      <div class="token-info"><div class="token-label">Magenta</div><div class="token-hex">#C0359E</div><div class="token-role">Hero / stat start</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#E8631A"></div>
+      <div class="token-info"><div class="token-label">Orange</div><div class="token-hex">#E8631A</div><div class="token-role">Btn + icon fill</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#D9601A"></div>
+      <div class="token-info"><div class="token-label">Btn Orange</div><div class="token-hex">#D9601A</div><div class="token-role">CTA buttons</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#F5AB00"></div>
+      <div class="token-info"><div class="token-label">Amber</div><div class="token-hex">#F5AB00</div><div class="token-role">Gradient warm end</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#00D4C8"></div>
+      <div class="token-info"><div class="token-label">Teal</div><div class="token-hex">#00D4C8</div><div class="token-role">VC-SMS pill</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#E8361A"></div>
+      <div class="token-info"><div class="token-label">Red</div><div class="token-hex">#E8361A</div><div class="token-role">ODL / OL pill</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#28A745"></div>
+      <div class="token-info"><div class="token-label">Green</div><div class="token-hex">#28A745</div><div class="token-role">Contact Us pill</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#1A1A2E"></div>
+      <div class="token-info"><div class="token-label">Navy</div><div class="token-hex">#1A1A2E</div><div class="token-role">Dark text / btn</div></div>
+    </div>
+    <div class="token-card">
+      <div class="token-dot" style="background:#FFFFFF; border: 0.5px solid #eee;"></div>
+      <div class="token-info"><div class="token-label">White</div><div class="token-hex">#FFFFFF</div><div class="token-role">Cards, backgrounds</div></div>
+    </div>
+  </div>
+
+  <!-- RAINBOW ACCENT BARS -->
+  <div class="sec-head">Accent underline bars (section titles)</div>
+  <div class="demo-card">
+    <div class="demo-body">
+      <div class="news-head">NEWS &amp;<br>EVENTS</div>
+      <div class="rainbow-line" style="max-width:90px; background: linear-gradient(90deg, #6A0DAD 0%, #C0359E 30%, #E8631A 65%, #F5AB00 100%)"></div>
+      <div style="font-size:11px; color:#888; margin-top:4px;">Multi-colour bar: purple → magenta → orange → amber. Used under section headings.</div>
+      <div style="display:flex; gap:5px; margin-top:12px;">
+        <div class="bar bar-purple"></div>
+        <div class="bar bar-orange"></div>
+        <div class="bar bar-green"></div>
+        <div class="bar bar-blue"></div>
+      </div>
+      <div style="font-size:10px; color:#aaa; margin-top:4px;">4-segment version: purple · orange · green · blue — used on news tabs</div>
+    </div>
+  </div>
+
+  <!-- NAVBAR DEMO -->
+  <div class="sec-head">Navigation bar</div>
+  <div class="demo-card">
+    <div class="demo-label">Purple → Violet gradient header</div>
+    <div class="nav-demo">
+      <div class="nav-logo">
+        <div class="nav-logo-circle">MIT</div>
+        <div class="nav-brand">
+          <div class="name">MIT-ADT UNIVERSITY</div>
+          <div class="sub">PUNE, INDIA</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <span class="nav-link">HOME</span>
+        <span class="nav-link">ABOUT</span>
+        <span class="nav-link">ACADEMICS</span>
+        <span class="nav-link">PROGRAMS</span>
+      </div>
+      <div class="nav-pills">
+        <span class="pill pill-teal">VC-SMS</span>
+        <span class="pill pill-red">ODL / OL</span>
+        <span class="pill pill-purple">Login</span>
+        <span class="pill pill-green">Contact</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO DEMO -->
+  <div class="sec-head">Hero / banner slide</div>
+  <div class="demo-card">
+    <div class="demo-label">Magenta → Orange → Amber gradient overlay on image</div>
+    <div class="hero-demo">
+      <div class="hero-content">
+        <div class="hero-h">
+          <span>The University for</span>
+          Holistic Development
+        </div>
+        <div class="hero-btn">VIEW MORE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS DEMO -->
+  <div class="sec-head">Stats / milestone bar</div>
+  <div class="demo-card">
+    <div class="demo-label">Horizontal magenta → orange → amber gradient</div>
+    <div class="stats-demo">
+      <div class="stat-item">
+        <div class="stat-num">37+</div>
+        <div class="stat-sub">Startups Incubated</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2.7+ Cr</div>
+        <div class="stat-sub">External Funding</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1313+</div>
+        <div class="stat-sub">Publications</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRAM CARDS DEMO -->
+  <div class="sec-head">Programs offered — card pattern</div>
+  <div class="demo-card">
+    <div class="demo-label">White cards with orange icon borders; active card = diagonal orange→magenta gradient</div>
+    <div class="demo-body">
+      <div style="font-size:16px;font-weight:800;text-align:center;letter-spacing:.08em;margin-bottom:12px;">PROGRAMS OFFERED</div>
+      <div class="prog-grid">
+        <div class="prog-card">
+          <div class="prog-icon prog-icon-outline">
+            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="#D9601A" stroke-width="1.5"/><path d="M3 16c0-3.31 2.69-6 6-6s6 2.69 6 6" stroke="#D9601A" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="prog-name">ENGINEERING</div>
+          <div class="prog-list">B.Tech. · M.Tech.<br>M.Sc. · PhD</div>
+          <div class="prog-actions">
+            <button class="btn-orange-outline" style="font-size:9px;padding:4px 8px;">Check Eligibility</button>
+            <button class="btn-orange" style="font-size:9px;padding:4px 8px;">Apply Now</button>
+          </div>
+        </div>
+        <div class="prog-card active">
+          <div class="prog-icon prog-icon-fill">
+            <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="9" rx="2" stroke="white" stroke-width="1.5"/><path d="M6 5V4a3 3 0 016 0v1" stroke="white" stroke-width="1.5"/></svg>
+          </div>
+          <div class="prog-name w">MANAGEMENT</div>
+          <div class="prog-list w">BBA · BCom<br>MBA · MCA · PhD</div>
+          <div class="prog-actions">
+            <button class="btn-orange-outline w" style="font-size:9px;padding:4px 8px;">Check Eligibility</button>
+            <button class="btn-orange" style="font-size:9px;padding:4px 8px;">Apply Now</button>
+          </div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-icon prog-icon-outline">
+            <svg viewBox="0 0 18 18" fill="none"><path d="M3 14l4-4 3 3 5-6" stroke="#D9601A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="prog-name">DESIGN</div>
+          <div class="prog-list">B.Design · M.Design<br>PG Diploma · PhD</div>
+          <div class="prog-actions">
+            <button class="btn-orange-outline" style="font-size:9px;padding:4px 8px;">Check Eligibility</button>
+            <button class="btn-orange" style="font-size:9px;padding:4px 8px;">Apply Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="sec-head">Buttons</div>
+  <div class="demo-card">
+    <div class="demo-body">
+      <div class="btn-row">
+        <button class="btn-orange-grad">Apply Now</button>
+        <button class="btn-purple-grad">Enquire Now</button>
+        <button class="btn-outline-purple">Check Eligibility</button>
+        <button class="btn-dark">View More</button>
+        <button class="btn-teal-pill">VC-SMS</button>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:#888;">
+        CTA primary = orange gradient · Secondary CTA = purple gradient · Outline = purple · Dark = navy fill · Utility pills = teal / red / green
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING ACTIONS -->
+  <div class="sec-head">Floating action bar (fixed bottom-right)</div>
+  <div class="demo-card">
+    <div class="demo-label">Sticky enquire + apply bar from screenshots</div>
+    <div class="demo-body">
+      <div class="fab-bar">
+        <button class="fab-btn fab-enquire">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="white" stroke-width="1.2"/><path d="M6.5 3.5v3l2 1.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Enquire Now
+        </button>
+        <button class="fab-btn fab-apply">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11L11 2M11 2H5M11 2v6" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Apply Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="sec-head">Typography</div>
+  <div class="demo-card">
+    <div class="demo-body">
+      <div class="type-row">
+        <div class="t-sample">
+          <span class="t-label">Hero h1 · 800 · 28px</span>
+          <span style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;color:#1A1A2E;line-height:1.1;">Holistic Development</span>
+        </div>
+        <div class="t-sample">
+          <span class="t-label">Section · 800 · 16px · ALL CAPS</span>
+          <span style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:#1A1A2E;letter-spacing:.08em;">PROGRAMS OFFERED</span>
+        </div>
+        <div class="t-sample">
+          <span class="t-label">Card title · 700 · 14px</span>
+          <span style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1A1A2E;">Faculty of Engineering</span>
+        </div>
+        <div class="t-sample">
+          <span class="t-label">Body · 400 · 13px · muted</span>
+          <span style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:400;color:#5A5A7A;line-height:1.7;">Keep yourself updated with what's new on the campus, upcoming events, seminars.</span>
+        </div>
+        <div class="t-sample">
+          <span class="t-label">Pill label · 700 · 9px · tracked</span>
+          <span style="background:#00D4C8;color:#003D3B;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.08em;">VC-SMS</span>
+          <span style="background:#E8361A;color:white;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.08em;margin-left:5px;">ODL / OL</span>
+          <span style="background:#28A745;color:white;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.08em;margin-left:5px;">Contact Us</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

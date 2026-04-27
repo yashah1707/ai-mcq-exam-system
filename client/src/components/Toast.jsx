@@ -44,27 +44,29 @@ const containerStyle = {
 const toastStyle = {
   minWidth: 260,
   padding: '12px 16px',
-  borderRadius: 8,
-  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  borderRadius: 12,
+  boxShadow: '0 4px 16px rgba(75, 0, 130, 0.18)',
+  fontFamily: "'Outfit', sans-serif",
+  fontSize: '0.9rem',
 };
 
 const infoStyle = {
-  background: '#111827',
+  background: '#1A1A2E',
   color: '#fff'
 };
 
 const warningStyle = {
-  background: '#ffb74d',
-  color: '#111'
+  background: '#F5AB00',
+  color: '#1A1A2E'
 };
 
 const successStyle = {
-  background: '#16a34a',
+  background: '#28A745',
   color: '#fff'
 };
 
 const errorStyle = {
-  background: '#dc2626',
+  background: '#E8361A',
   color: '#fff'
 };
 

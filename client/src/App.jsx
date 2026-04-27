@@ -25,6 +25,7 @@ const BatchAnalytics = lazy(() => import('./pages/admin/BatchAnalytics'));
 const ExamView = lazy(() => import('./pages/ExamView'));
 const ExamResultPage = lazy(() => import('./pages/ExamResultPage'));
 const Profile = lazy(() => import('./pages/Profile'));
+const ChangePassword = lazy(() => import('./pages/ChangePassword'));
 const AdaptiveTest = lazy(() => import('./pages/AdaptiveTest'));
 const TestAnalysis = lazy(() => import('./pages/TestAnalysis'));
 const ExamsPage = lazy(() => import('./pages/ExamsPage'));
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="/analytics" element={renderRoute(<ProtectedRoute><StudentAnalytics /></ProtectedRoute>)} />
             <Route path="/history" element={renderRoute(<ProtectedRoute><ExamHistory /></ProtectedRoute>)} />
             <Route path="/profile" element={renderRoute(<ProtectedRoute><Profile /></ProtectedRoute>)} />
+            <Route path="/profile/password" element={renderRoute(<ProtectedRoute><ChangePassword /></ProtectedRoute>)} />
             <Route path="/exam/:examId" element={renderRoute(<ProtectedRoute><ExamView /></ProtectedRoute>)} />
             <Route path="/result/:attemptId" element={renderRoute(<ProtectedRoute><ExamResultPage /></ProtectedRoute>)} />
             <Route path="/analysis/:attemptId" element={renderRoute(<ProtectedRoute><TestAnalysis /></ProtectedRoute>)} />

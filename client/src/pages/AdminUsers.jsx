@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { bulkCreateUsers, createUserAccount, fetchUsers, sendUserPasswordLink, updateRole, updateUserDetails, toggleStatus } from '../services/userService';
+import { bulkCreateUsers, createUserAccount, deleteUser, fetchUsers, sendUserPasswordLink, updateRole, updateUserDetails, toggleStatus } from '../services/userService';
 import { fetchClasses } from '../services/classService';
 import { fetchSubjects } from '../services/subjectService';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -870,6 +870,21 @@ export default function AdminUsers(){
     }
   };
 
+  const handleDeleteUser = async (user) => {
+    const confirmed = window.confirm(
+      `⚠️ Permanently delete ${user.name || user.email}?\n\nThis will remove the user and all their exam attempts, analytics, and pending emails. This action cannot be undone.`
+    );
+    if (!confirmed) return;
+    try {
+      const response = await deleteUser(user._id);
+      showToast(response.message || 'User deleted permanently.', { type: 'success' });
+      setOpenActionMenuId(null);
+      await load();
+    } catch (err) {
+      showToast(err?.response?.data?.message || err.message, { type: 'error' });
+    }
+  };
+
   return (
     <div className="container">
       <div className="nav"><h2>Manage Users</h2><div className="small">Admin panel</div></div>
@@ -1589,6 +1604,16 @@ export default function AdminUsers(){
                                   </button>
                                 ))}
                               </div>
+                            </div>
+                            <div style={{ borderTop: '1px solid var(--border-color, #dbe3f0)', paddingTop: 8, marginTop: 4 }}>
+                              <button
+                                type="button"
+                                className="button-sm button-danger"
+                                onClick={() => handleDeleteUser(u)}
+                                style={{ width: '100%' }}
+                              >
+                                🗑 Delete Permanently
+                              </button>
                             </div>
                           </div>
                         </div>

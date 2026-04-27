@@ -16,7 +16,7 @@ export default function LoadingSpinner({ fullScreen = false }) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        backgroundColor: 'rgba(75, 0, 130, 0.15)',
         zIndex: 1000,
       }
     : {
@@ -37,15 +37,16 @@ const styles = {
   spinner: {
     width: '24px',
     height: '24px',
-    border: '3px solid #e5e7eb',
-    borderTop: '3px solid #0b5fff',
+    border: '3px solid #E2D8F0',
+    borderTop: '3px solid #6A0DAD',
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
   text: {
-    color: '#666',
-    fontWeight: '500',
+    color: '#5A5A7A',
+    fontWeight: '600',
     fontSize: '0.9rem',
+    fontFamily: "'Outfit', sans-serif",
   },
 };
 

@@ -12,7 +12,8 @@
     "backfill:admin-ids": "node scripts/backfillAdminIds.js --apply",
     "backfill:employee-ids": "node scripts/backfillEmployeeIds.js --apply",
     "backfill:analytics": "node scripts/backfillPerformanceAnalytics.js",
-    "worker": "node scripts/processAnalyticsJobs.js",
+    "worker:analytics": "node scripts/processAnalyticsJobs.js",
+    "worker:email": "node scripts/processEmailJobs.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "smoke": "node scripts/smokeApi.js"
   },
@@ -21,6 +22,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "ai-mcq-exam-system": "file:..",
     "axios": "^1.13.5",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.9.0",

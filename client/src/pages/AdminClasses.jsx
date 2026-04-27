@@ -149,6 +149,7 @@ export default function AdminClasses() {
   const [removingStudentId, setRemovingStudentId] = useState(null);
   const [clearingLabBatchStudentId, setClearingLabBatchStudentId] = useState(null);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -848,244 +849,219 @@ export default function AdminClasses() {
   };
 
   return (
-    <div className="container">
-      <div className="nav">
-        <h2>Manage Classes</h2>
-        <div className="small">Theory classes and lab batches</div>
-      </div>
+    <div className="admin-page">
+      {/* Hidden file inputs */}
+      <input ref={bulkUploadInputRef} type="file" accept=".csv,text/csv" style={{ display: 'none' }} onChange={(event) => handleBulkFileUpload(event.target.files?.[0])} />
+      <input ref={bulkStudentUploadInputRef} type="file" accept=".csv,text/csv" style={{ display: 'none' }} onChange={(event) => handleBulkStudentUpload(event.target.files?.[0])} />
 
-      {error && <div className="card" style={{ color: '#dc2626' }}>{error}</div>}
-
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>Create Theory Class</h3>
-        <form onSubmit={handleCreateClass}>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-            <div className="form-group">
-              <label>Class Name</label>
-              <input value={classForm.name} onChange={(event) => setClassForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="e.g., TY-AIA-9" required />
-            </div>
-            <div className="form-group">
-              <label>Year</label>
-              <select value={classForm.year} onChange={(event) => setClassForm((prev) => ({ ...prev, year: Number(event.target.value) }))}>
-                {YEAR_OPTIONS.map((year) => <option key={year} value={year}>Year {year}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Course</label>
-              <input value={classForm.course} onChange={(event) => setClassForm((prev) => ({ ...prev, course: event.target.value.toUpperCase() }))} placeholder="e.g., GENERAL or CSE" required />
-            </div>
-            <div className="form-group">
-              <label>Student Capacity</label>
-              <input type="number" min="1" value={classForm.capacity} onChange={(event) => setClassForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
-            </div>
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Description</label>
-              <input value={classForm.description} onChange={(event) => setClassForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Optional note about the class" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-            <button type="submit" disabled={savingClass}>{savingClass ? 'Creating...' : 'Create Class'}</button>
-          </div>
-        </form>
-
-        <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #e5e7eb', display: 'grid', gap: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <h4 style={{ margin: 0 }}>Bulk Upload Classes (CSV)</h4>
-              <div className="small">Columns: name, year, course, capacity, description. Student enrollment is not part of this file.</div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <input
-                ref={bulkUploadInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                style={{ display: 'none' }}
-                onChange={(event) => handleBulkFileUpload(event.target.files?.[0])}
-              />
-              <button type="button" className="button-secondary" onClick={downloadSampleCSV}>Download Sample CSV</button>
-              <button type="button" onClick={() => bulkUploadInputRef.current?.click()} disabled={bulkUploading}>
-                {bulkUploading ? 'Uploading...' : 'Upload CSV'}
-              </button>
-            </div>
-          </div>
-
-          {bulkResult?.error && (
-            <div className="alert alert-error">{bulkResult.error}</div>
-          )}
-
-          {bulkResult && !bulkResult.error && (
-            <div style={{ display: 'grid', gap: 12 }}>
-              <div className={`alert ${bulkResult.failedCount > 0 ? 'alert-warning' : 'alert-success'}`}>
-                Created {bulkResult.createdCount} class(es). Failed {bulkResult.failedCount}.
-              </div>
-              {bulkResult.errors?.length > 0 && (
-                <div style={{ border: '1px solid #fcd34d', background: '#fffbeb', borderRadius: 12, padding: 12 }}>
-                  <strong style={{ display: 'block', marginBottom: 8 }}>Import Issues</strong>
-                  <div style={{ display: 'grid', gap: 6 }}>
-                    {bulkResult.errors.map((rowError, index) => (
-                      <div key={`${rowError.row}-${rowError.name || 'class'}-${index}`} className="small">
-                        Row {rowError.row}{rowError.name ? ` (${rowError.name})` : ''}: {rowError.message}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+      {/* â”€â”€ Page Header â”€â”€ */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <h1 className="page-title">Manage Classes</h1>
+          <div className="page-title-bar" />
+          <p className="page-subtitle">Theory classes, lab batches &amp; student assignments</p>
+        </div>
+        <div className="page-header-actions">
+          <button type="button" className="btn-outline" onClick={downloadSampleCSV}>â†“ Sample CSV</button>
+          <button type="button" className="btn-outline" onClick={() => bulkUploadInputRef.current?.click()} disabled={bulkUploading}>
+            {bulkUploading ? 'Uploading…' : 'ðŸ“ Bulk Upload'}
+          </button>
+          <button type="button" className="btn-cta" onClick={() => setShowCreateModal(true)}>+ Create Class</button>
         </div>
       </div>
 
-      <div className="card">
-        {loading && <LoadingSpinner />}
-        {!loading && classes.length === 0 && <p className="text-muted text-center">No classes created yet.</p>}
-        {!loading && classes.length > 0 && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
-              <div>
-                <h3 style={{ margin: 0 }}>Class List</h3>
-                <div className="small">Click a class to open its students, details, and operations.</div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="small">Selected for promotion: <strong>{selectedPromotionClassIds.length}</strong></div>
-                <button type="button" className="button-secondary" onClick={() => setSelectedPromotionClassIds(classes.filter((academicClass) => Number(academicClass.year || 1) < 4).map((academicClass) => academicClass._id))}>Select Promotable</button>
-                <button type="button" className="button-secondary" onClick={() => setSelectedPromotionClassIds([])}>Clear Selection</button>
-                <button type="button" onClick={handlePromoteSelectedClasses} disabled={promotingClasses || selectedPromotionClassIds.length === 0}>{promotingClasses ? 'Promoting...' : 'Promote Selected Classes'}</button>
-                <div className="small">Total classes: <strong>{classes.length}</strong></div>
-              </div>
+      {error && <div className="alert alert-danger" style={{ marginBottom: 20 }}>{error}</div>}
+
+      {bulkResult?.error && <div className="alert alert-danger" style={{ marginBottom: 16 }}>{bulkResult.error}</div>}
+      {bulkResult && !bulkResult.error && (
+        <div style={{ marginBottom: 16 }}>
+          <div className={`alert ${bulkResult.failedCount > 0 ? 'alert-warning' : 'alert-success'}`}>
+            Created {bulkResult.createdCount} class(es). Failed {bulkResult.failedCount}.
+          </div>
+          {bulkResult.errors?.length > 0 && (
+            <div className="preview-panel" style={{ marginTop: 8 }}>
+              <strong style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem' }}>Import Issues</strong>
+              {bulkResult.errors.map((rowError, index) => (
+                <div key={`${rowError.row}-${rowError.name || 'class'}-${index}`} className="small">
+                  Row {rowError.row}{rowError.name ? ` (${rowError.name})` : ''}: {rowError.message}
+                </div>
+              ))}
             </div>
-            <div style={{ display: 'grid', gap: 12 }}>
+          )}
+        </div>
+      )}
+
+      {/* â”€â”€ Stat Cards â”€â”€ */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-card-accent" style={{ background: '#6A0DAD' }} />
+          <div className="stat-card-value">{loading ? '—' : classes.length}</div>
+          <div className="stat-card-label">Total Classes</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-accent" style={{ background: '#9B30E0' }} />
+          <div className="stat-card-value">{loading ? '—' : students.filter(s => s.batch).length}</div>
+          <div className="stat-card-label">Assigned Students</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-accent" style={{ background: '#4B0082' }} />
+          <div className="stat-card-value">{loading ? '—' : classes.reduce((sum, c) => sum + Math.max((c.capacity || 0) - (c.studentCount || 0), 0), 0)}</div>
+          <div className="stat-card-label">Open Seats</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-accent" style={{ background: '#C0359E' }} />
+          <div className="stat-card-value">{loading ? '—' : classes.reduce((sum, c) => sum + (c.labBatches?.length || 0), 0)}</div>
+          <div className="stat-card-label">Lab Batches</div>
+        </div>
+      </div>
+
+      {/* â”€â”€ Promotion Bar â”€â”€ */}
+      {!loading && classes.length > 0 && (
+        <div className="promotion-bar">
+          <div className="inline-toolbar">
+            <span style={{ fontSize: '0.82rem', color: '#5A5A7A' }}>Promotion:</span>
+            <span className="badge badge-primary">{selectedPromotionClassIds.length} selected</span>
+          </div>
+          <div className="inline-toolbar">
+            <button type="button" className="btn-outline" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={() => setSelectedPromotionClassIds(classes.filter((c) => Number(c.year || 1) < 4).map((c) => c._id))}>Select Promotable</button>
+            <button type="button" className="btn-outline" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={() => setSelectedPromotionClassIds([])}>Clear</button>
+            <button type="button" className="btn-purple" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={handlePromoteSelectedClasses} disabled={promotingClasses || selectedPromotionClassIds.length === 0}>
+              {promotingClasses ? 'Promoting…' : 'Promote Selected'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* â”€â”€ Class List â”€â”€ */}
+      <div className="data-card">
+        {loading && <div className="empty-state"><LoadingSpinner /></div>}
+        {!loading && classes.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">ðŸ›ï¸</div>
+            <div className="empty-state-title">No classes created yet</div>
+            <div className="empty-state-text">Create your first theory class to get started.</div>
+            <button type="button" className="btn-cta" onClick={() => setShowCreateModal(true)}>+ Create Class</button>
+          </div>
+        )}
+        {!loading && classes.length > 0 && (
+          <div className="data-card-body" style={{ padding: 0 }}>
+            <div className="data-card-header">
+              <h3 className="data-card-title">{classes.length} Classes</h3>
+              <span className="small">Click a class to expand details</span>
+            </div>
+            <div style={{ padding: '12px 16px', display: 'grid', gap: 8 }}>
             {classes.map((academicClass) => {
               const isActive = selectedClass?._id === academicClass._id;
               const classStudents = students.filter((student) => student.batch === academicClass.name);
               const visibleStudentsForSelectedClass = isActive ? visibleClassStudents : [];
               const isPromotionSelected = selectedPromotionClassIds.includes(academicClass._id);
               const isFinalYear = Number(academicClass.year || 1) >= 4;
+              const capacityPct = Math.min(((academicClass.studentCount || 0) / (academicClass.capacity || 1)) * 100, 100);
               return (
-                <div
-                  key={academicClass._id}
-                  style={{
-                    border: `1px solid ${isActive ? '#93c5fd' : '#e5e7eb'}`,
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    background: '#fff',
-                  }}
-                >
-                  <button
-                    type="button"
-                    className={isActive ? '' : 'button-secondary'}
-                    onClick={() => handleToggleClass(academicClass._id)}
-                    style={{ textAlign: 'left', padding: 16, borderRadius: 0, width: '100%' }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                        <input
-                          type="checkbox"
-                          checked={isPromotionSelected}
-                          disabled={isFinalYear}
-                          onChange={(event) => {
-                            event.stopPropagation();
-                            togglePromotionClassSelection(academicClass._id);
-                          }}
-                          onClick={(event) => event.stopPropagation()}
-                          aria-label={`Select ${academicClass.name} for promotion`}
-                        />
-                        <div>
-                        <strong style={{ display: 'block', marginBottom: 4 }}>{academicClass.name}</strong>
-                        <div className="small">Course: {academicClass.course || 'GENERAL'} | Year: {academicClass.year || 1}</div>
-                        <div className="small" style={{ color: getCapacityTone(academicClass.studentCount, academicClass.capacity) }}>
-                          Students: {academicClass.studentCount} / {academicClass.capacity}
+                <div key={academicClass._id} className={`class-accordion-card${isActive ? ' active' : ''}`}>
+                  <button type="button" className="class-accordion-trigger" onClick={() => handleToggleClass(academicClass._id)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={isPromotionSelected}
+                        disabled={isFinalYear}
+                        onChange={(event) => { event.stopPropagation(); togglePromotionClassSelection(academicClass._id); }}
+                        onClick={(event) => event.stopPropagation()}
+                        aria-label={`Select ${academicClass.name} for promotion`}
+                        style={{ flexShrink: 0 }}
+                      />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.92rem', color: '#1A1A2E' }}>{academicClass.name}</span>
+                          <span style={{ fontSize: '0.72rem', color: '#5A5A7A', fontWeight: 600 }}>{academicClass.course || 'GENERAL'} · Year {academicClass.year || 1}</span>
+                          {isFinalYear && <span className="badge badge-warning">Final Year</span>}
                         </div>
-                        <div className="small">Lab Batches: {academicClass.labBatches.length ? academicClass.labBatches.map((labBatch) => `${labBatch.name} (${labBatch.studentCount}/${labBatch.capacity})`).join(', ') : 'None created yet'}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 4 }}>
+                          <span style={{ fontSize: '0.78rem', color: '#5A5A7A' }}>
+                            <strong style={{ color: getCapacityTone(academicClass.studentCount, academicClass.capacity) }}>{academicClass.studentCount}</strong> / {academicClass.capacity} students
+                          </span>
+                          <span style={{ fontSize: '0.78rem', color: '#5A5A7A' }}>
+                            {academicClass.labBatches.length} lab {academicClass.labBatches.length === 1 ? 'batch' : 'batches'}
+                          </span>
                         </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {isFinalYear && <span className="badge badge-warning">Final Year</span>}
-                        {isActive && <span className="badge badge-info">Selected</span>}
-                        <ChevronIcon expanded={isActive} />
+                        <div className="capacity-bar" style={{ maxWidth: 180, marginTop: 4 }}>
+                          <div className="capacity-fill" style={{ width: `${capacityPct}%`, background: getCapacityTone(academicClass.studentCount, academicClass.capacity) }} />
+                        </div>
                       </div>
                     </div>
+                    <ChevronIcon expanded={isActive} />
                   </button>
 
                   {isActive && (
-                    <div style={{ padding: 20, borderTop: '1px solid #e5e7eb', display: 'grid', gap: 24 }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                          <div>
-                            <h3 style={{ marginTop: 0, marginBottom: 6 }}>{academicClass.name}</h3>
-                            <div className="small">Course: {academicClass.course || 'GENERAL'} | Year: {academicClass.year || 1}</div>
-                            <div className="small">{academicClass.description || 'No class description added yet.'}</div>
+                    <div className="class-accordion-body">
+                      {/* â”€â”€ Overview Stats â”€â”€ */}
+                      <div className="accordion-section">
+                        <div className="mini-stats-row">
+                          <div className="mini-stat">
+                            <div className="mini-stat-value">{Math.max((academicClass.capacity || 0) - (academicClass.studentCount || 0), 0)}</div>
+                            <div className="mini-stat-label">Open Seats</div>
                           </div>
-                          <div className="small" style={{ color: classUtilizationColor }}>
-                            Utilization: <strong>{academicClass.studentCount} / {academicClass.capacity}</strong>
+                          <div className="mini-stat">
+                            <div className="mini-stat-value">{academicClass.labBatches.length}</div>
+                            <div className="mini-stat-label">Lab Batches</div>
                           </div>
-                        </div>
-
-                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 16 }}>
-                          <div style={{ padding: 12, border: '1px solid #e5e7eb', borderRadius: 10 }}>
-                            <div className="small">Open Seats</div>
-                            <strong>{Math.max((academicClass.capacity || 0) - (academicClass.studentCount || 0), 0)}</strong>
-                          </div>
-                          <div style={{ padding: 12, border: '1px solid #e5e7eb', borderRadius: 10 }}>
-                            <div className="small">Lab Batches</div>
-                            <strong>{academicClass.labBatches.length}</strong>
-                          </div>
-                          <div style={{ padding: 12, border: '1px solid #e5e7eb', borderRadius: 10 }}>
-                            <div className="small">Students In Lab Batches</div>
-                            <strong>{classStudents.filter((student) => student.labBatch).length}</strong>
+                          <div className="mini-stat">
+                            <div className="mini-stat-value">{classStudents.filter((s) => s.labBatch).length}</div>
+                            <div className="mini-stat-label">In Lab Batches</div>
                           </div>
                         </div>
+                        {academicClass.description && <p className="small" style={{ marginTop: 8, marginBottom: 0 }}>{academicClass.description}</p>}
                       </div>
 
-                      <div style={{ display: 'grid', gap: 16 }}>
-                        <h4 style={{ margin: 0 }}>Edit Theory Class</h4>
-                        <p className="text-muted" style={{ margin: 0 }}>Renaming a class also updates teacher assignments and student class membership.</p>
+                      {/* â”€â”€ Edit Class â”€â”€ */}
+                      <div className="accordion-section">
+                        <h4 className="accordion-section-title">Edit Class</h4>
                         <form onSubmit={handleUpdateClass}>
-                          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+                          <div className="form-row">
                             <div className="form-group">
-                              <label>Class Name</label>
+                              <label className="mit-label">Class Name</label>
                               <input value={classEditForm.name} onChange={(event) => setClassEditForm((prev) => ({ ...prev, name: event.target.value }))} required />
                             </div>
                             <div className="form-group">
-                              <label>Year</label>
+                              <label className="mit-label">Year</label>
                               <select value={classEditForm.year} onChange={(event) => setClassEditForm((prev) => ({ ...prev, year: Number(event.target.value) }))}>
                                 {YEAR_OPTIONS.map((year) => <option key={year} value={year}>Year {year}</option>)}
                               </select>
                             </div>
                             <div className="form-group">
-                              <label>Course</label>
+                              <label className="mit-label">Course</label>
                               <input value={classEditForm.course} onChange={(event) => setClassEditForm((prev) => ({ ...prev, course: event.target.value.toUpperCase() }))} required />
                             </div>
                             <div className="form-group">
-                              <label>Student Capacity</label>
+                              <label className="mit-label">Capacity</label>
                               <input type="number" min="1" value={classEditForm.capacity} onChange={(event) => setClassEditForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
                             </div>
-                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                              <label>Description</label>
-                              <input value={classEditForm.description} onChange={(event) => setClassEditForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Optional note about the class" />
-                            </div>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-                            <button type="button" className="button-secondary" onClick={handleDeleteClass} disabled={deletingSelectedClass || updatingClass}>
-                              {deletingSelectedClass ? 'Deleting...' : 'Delete Class'}
+                          <div className="form-group" style={{ marginTop: 8 }}>
+                            <label className="mit-label">Description</label>
+                            <input value={classEditForm.description} onChange={(event) => setClassEditForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Optional note" />
+                          </div>
+                          <div className="form-actions form-actions-spread">
+                            <button type="button" className="btn-danger-outline" onClick={handleDeleteClass} disabled={deletingSelectedClass || updatingClass}>
+                              {deletingSelectedClass ? 'Deleting…' : 'Delete Class'}
                             </button>
-                            <button type="submit" disabled={updatingClass || deletingSelectedClass}>
-                              {updatingClass ? 'Saving...' : 'Save Class Changes'}
+                            <button type="submit" className="btn-purple" disabled={updatingClass || deletingSelectedClass}>
+                              {updatingClass ? 'Saving…' : 'Save Changes'}
                             </button>
                           </div>
                         </form>
                       </div>
 
-                      <div style={{ display: 'grid', gap: 16 }}>
-                        <h4 style={{ margin: 0 }}>Student List</h4>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <div className="small">Students currently assigned to this class: <strong>{classStudents.length}</strong></div>
-                          <input value={classStudentSearch} onChange={(event) => setClassStudentSearch(event.target.value)} placeholder="Search students in this class" style={{ minWidth: 260 }} />
+                      {/* â”€â”€ Student Roster â”€â”€ */}
+                      <div className="accordion-section">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                          <h4 className="accordion-section-title" style={{ marginBottom: 0 }}>Student Roster ({classStudents.length})</h4>
+                          <input value={classStudentSearch} onChange={(event) => setClassStudentSearch(event.target.value)} placeholder="Search students…" style={{ maxWidth: 260 }} />
                         </div>
-
-                        {!classStudents.length && <p className="text-muted" style={{ margin: 0 }}>No students are assigned to this class yet.</p>}
+                        {!classStudents.length && <p className="small" style={{ margin: 0, color: '#5A5A7A' }}>No students assigned to this class yet.</p>}
                         {classStudents.length > 0 && (
                           <div style={{ overflowX: 'auto' }}>
-                            <table>
+                            <table className="admin-table">
                               <thead>
                                 <tr>
                                   <th>Name</th>
@@ -1101,27 +1077,17 @@ export default function AdminClasses() {
                                   const isClearingLab = clearingLabBatchStudentId === student._id;
                                   return (
                                     <tr key={student._id}>
-                                      <td>{student.name}</td>
+                                      <td style={{ fontWeight: 600 }}>{student.name}</td>
                                       <td>{student.email}</td>
-                                      <td>{student.enrollmentNo || 'Not set'}</td>
-                                      <td>{student.labBatch || 'Not assigned'}</td>
+                                      <td>{student.enrollmentNo || <span style={{ color: '#5A5A7A' }}>—</span>}</td>
+                                      <td>{student.labBatch || <span style={{ color: '#5A5A7A' }}>—</span>}</td>
                                       <td>
-                                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                          <button
-                                            type="button"
-                                            className="button-secondary"
-                                            onClick={() => handleClearStudentLabBatch(student._id)}
-                                            disabled={!student.labBatch || isRemoving || isClearingLab}
-                                          >
-                                            {isClearingLab ? 'Clearing...' : 'Clear Lab'}
+                                        <div className="inline-toolbar">
+                                          <button type="button" className="btn-outline" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={() => handleClearStudentLabBatch(student._id)} disabled={!student.labBatch || isRemoving || isClearingLab}>
+                                            {isClearingLab ? '…' : 'Clear Lab'}
                                           </button>
-                                          <button
-                                            type="button"
-                                            className="button-secondary"
-                                            onClick={() => handleRemoveStudentFromSelectedClass(student._id)}
-                                            disabled={isRemoving || isClearingLab}
-                                          >
-                                            {isRemoving ? 'Removing...' : 'Remove From Class'}
+                                          <button type="button" className="btn-danger-outline" style={{ padding: '4px 10px', fontSize: '0.72rem' }} onClick={() => handleRemoveStudentFromSelectedClass(student._id)} disabled={isRemoving || isClearingLab}>
+                                            {isRemoving ? '…' : 'Remove'}
                                           </button>
                                         </div>
                                       </td>
@@ -1134,139 +1100,102 @@ export default function AdminClasses() {
                         )}
                       </div>
 
-                      <div style={{ display: 'grid', gap: 16 }}>
-                        <h4 style={{ margin: 0 }}>Assign Students To {academicClass.name}</h4>
-                        <p className="text-muted" style={{ margin: 0 }}>A student belongs to only one theory class. Assigning them here moves them into this class and clears any previous lab batch.</p>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <input value={studentSearch} onChange={(event) => setStudentSearch(event.target.value)} placeholder="Search all students by name, email, or enrollment number" />
-                          <button type="button" className="button-secondary" onClick={() => setClassStudentSelection(visibleStudents.map((student) => student._id))}>Select Visible</button>
-                          <button type="button" className="button-secondary" onClick={() => setClassStudentSelection([])}>Clear Selection</button>
-                          <div className="small">Selected: <strong>{classStudentSelection.length}</strong></div>
+                      {/* â”€â”€ Assign Students â”€â”€ */}
+                      <div className="accordion-section">
+                        <h4 className="accordion-section-title">Assign Students to {academicClass.name}</h4>
+                        <p className="small" style={{ margin: '0 0 10px' }}>Assigning moves students into this class and clears any previous lab batch.</p>
+                        <div className="inline-toolbar" style={{ marginBottom: 8 }}>
+                          <input value={studentSearch} onChange={(event) => setStudentSearch(event.target.value)} placeholder="Search all students…" style={{ flex: 1, minWidth: 200 }} />
+                          <button type="button" className="btn-outline" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => setClassStudentSelection(visibleStudents.map((s) => s._id))}>Select All</button>
+                          <button type="button" className="btn-outline" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => setClassStudentSelection([])}>Clear</button>
+                          <span className="badge badge-primary">{classStudentSelection.length} selected</span>
                         </div>
-                        <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 8, padding: 8 }}>
+                        <div className="student-checklist">
                           {visibleStudents.map((student) => (
-                            <label key={student._id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 8px', borderBottom: '1px solid #f1f5f9' }}>
+                            <label key={student._id} className="student-checklist-item">
                               <input type="checkbox" checked={classStudentSelection.includes(student._id)} onChange={() => toggleSelection(classStudentSelection, setClassStudentSelection, student._id)} />
                               <div>
-                                <div style={{ fontWeight: 600 }}>{student.name}</div>
-                                <div className="small">{student.email} | {student.enrollmentNo || 'No enrollment number'}</div>
-                                <div className="small">Current Class: {student.batch || 'Unassigned'} | Lab Batch: {student.labBatch || 'Not assigned'}</div>
+                                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{student.name}</div>
+                                <div className="small">{student.email} · {student.enrollmentNo || 'No enrollment'}</div>
+                                <div className="small">Class: {student.batch || 'Unassigned'} · Lab: {student.labBatch || '—'}</div>
                               </div>
                             </label>
                           ))}
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <button type="button" onClick={handleAssignStudentsToClass} disabled={assigningStudents || classStudentSelection.length === 0}>
-                            {assigningStudents ? 'Assigning...' : `Assign Selected Students To ${academicClass.name}`}
+                        <div className="form-actions">
+                          <button type="button" className="btn-purple" onClick={handleAssignStudentsToClass} disabled={assigningStudents || classStudentSelection.length === 0}>
+                            {assigningStudents ? 'Assigning…' : `Assign to ${academicClass.name}`}
                           </button>
                         </div>
 
-                        <div style={{ marginTop: 8, paddingTop: 16, borderTop: '1px solid #e5e7eb', display: 'grid', gap: 12 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {/* Bulk CSV Student Assign */}
+                        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(106,13,173,0.06)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
                             <div>
-                              <h5 style={{ margin: 0 }}>Bulk Assign Students via CSV</h5>
-                              <div className="small">Columns: enrollmentNo, labBatch. Leave labBatch blank to assign the student without a lab group. Upload first, review the preview, then confirm import.</div>
+                              <h5 className="accordion-section-title" style={{ marginBottom: 2 }}>Bulk CSV Student Import</h5>
+                              <p className="small" style={{ margin: 0 }}>Columns: enrollmentNo, labBatch</p>
                             </div>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                              <input
-                                ref={bulkStudentUploadInputRef}
-                                type="file"
-                                accept=".csv,text/csv"
-                                style={{ display: 'none' }}
-                                onChange={(event) => handleBulkStudentUpload(event.target.files?.[0])}
-                              />
-                              <button type="button" className="button-secondary" onClick={downloadStudentAssignmentSampleCSV}>
-                                Download Sample CSV
-                              </button>
-                              <button type="button" className="button-secondary" onClick={exportCurrentClassRosterCSV}>
-                                Export Current Roster
-                              </button>
-                              <button type="button" onClick={() => bulkStudentUploadInputRef.current?.click()} disabled={bulkStudentAssigning}>
-                                {bulkStudentAssigning ? 'Working...' : 'Upload Student CSV'}
+                            <div className="inline-toolbar">
+                              <button type="button" className="btn-outline" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={downloadStudentAssignmentSampleCSV}>Sample CSV</button>
+                              <button type="button" className="btn-outline" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={exportCurrentClassRosterCSV}>Export Roster</button>
+                              <button type="button" className="btn-purple" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={() => bulkStudentUploadInputRef.current?.click()} disabled={bulkStudentAssigning}>
+                                {bulkStudentAssigning ? 'Working…' : 'Upload CSV'}
                               </button>
                             </div>
                           </div>
 
                           {bulkStudentPreviewRows.length > 0 && (
-                            <div style={{ display: 'grid', gap: 12, border: '1px solid #dbeafe', background: '#f8fbff', borderRadius: 12, padding: 12 }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div className="preview-panel">
+                              <div className="preview-panel-header">
                                 <div>
-                                  <strong style={{ display: 'block' }}>Preview {bulkStudentPreviewFileName ? `(${bulkStudentPreviewFileName})` : ''}</strong>
-                                  <div className="small">
-                                    Ready rows: {bulkStudentPreviewRows.filter((row) => !row.previewError).length} | Issues: {bulkStudentPreviewRows.filter((row) => row.previewError).length}
-                                  </div>
+                                  <strong style={{ fontSize: '0.85rem' }}>Preview {bulkStudentPreviewFileName ? `— ${bulkStudentPreviewFileName}` : ''}</strong>
+                                  <div className="small">Ready: {bulkStudentPreviewRows.filter((r) => !r.previewError).length} · Issues: {bulkStudentPreviewRows.filter((r) => r.previewError).length}</div>
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                  <button type="button" className="button-secondary" onClick={clearBulkStudentPreview} disabled={bulkStudentAssigning}>
-                                    Clear Preview
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={handleConfirmBulkStudentUpload}
-                                    disabled={bulkStudentAssigning || bulkStudentPreviewRows.some((row) => row.previewError)}
-                                  >
-                                    {bulkStudentAssigning ? 'Importing...' : `Confirm Import Into ${academicClass.name}`}
+                                <div className="inline-toolbar">
+                                  <button type="button" className="btn-outline" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={clearBulkStudentPreview} disabled={bulkStudentAssigning}>Clear</button>
+                                  <button type="button" className="btn-purple" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={handleConfirmBulkStudentUpload} disabled={bulkStudentAssigning || bulkStudentPreviewRows.some((r) => r.previewError)}>
+                                    {bulkStudentAssigning ? 'Importing…' : 'Confirm Import'}
                                   </button>
                                 </div>
                               </div>
-
                               <div style={{ overflowX: 'auto' }}>
-                                <table>
-                                  <thead>
-                                    <tr>
-                                      <th>Row</th>
-                                      <th>Enrollment No</th>
-                                      <th>Name</th>
-                                      <th>Current Class</th>
-                                      <th>Current Lab</th>
-                                      <th>New Lab</th>
-                                      <th>Status</th>
-                                    </tr>
-                                  </thead>
+                                <table className="admin-table">
+                                  <thead><tr><th>Row</th><th>Enrollment</th><th>Name</th><th>Current Class</th><th>Current Lab</th><th>New Lab</th><th>Status</th></tr></thead>
                                   <tbody>
                                     {bulkStudentPreviewRows.map((row) => (
                                       <tr key={`${row.rowNumber}-${row.enrollmentNo}`}>
                                         <td>{row.rowNumber}</td>
                                         <td>{row.enrollmentNo}</td>
-                                        <td>{row.studentName || 'Unknown student'}</td>
+                                        <td>{row.studentName || <span style={{ color: '#5A5A7A' }}>Unknown</span>}</td>
                                         <td>{row.currentClass || 'Unassigned'}</td>
-                                        <td>{row.currentLabBatch || 'None'}</td>
-                                        <td>{row.labBatch || 'No lab batch'}</td>
-                                        <td style={{ color: row.previewError ? '#b45309' : '#15803d', fontWeight: 600 }}>
-                                          {row.previewError || 'Ready'}
-                                        </td>
+                                        <td>{row.currentLabBatch || '—'}</td>
+                                        <td>{row.labBatch || '—'}</td>
+                                        <td style={{ color: row.previewError ? '#b45309' : '#15803d', fontWeight: 600, fontSize: '0.78rem' }}>{row.previewError || 'Ready'}</td>
                                       </tr>
                                     ))}
                                   </tbody>
                                 </table>
                               </div>
-                              {bulkStudentPreviewRows.some((row) => row.previewError) && (
-                                <div className="small" style={{ color: '#b45309' }}>
-                                  Fix the rows marked above and upload again before confirming the import.
-                                </div>
+                              {bulkStudentPreviewRows.some((r) => r.previewError) && (
+                                <div className="small" style={{ color: '#b45309', marginTop: 8 }}>Fix the flagged rows and re-upload before confirming.</div>
                               )}
                             </div>
                           )}
 
-                          {bulkStudentResult?.error && (
-                            <div className="alert alert-error">{bulkStudentResult.error}</div>
-                          )}
-
+                          {bulkStudentResult?.error && <div className="alert alert-danger" style={{ marginTop: 8 }}>{bulkStudentResult.error}</div>}
                           {bulkStudentResult && !bulkStudentResult.error && (
-                            <div style={{ display: 'grid', gap: 12 }}>
+                            <div style={{ marginTop: 8 }}>
                               <div className={`alert ${bulkStudentResult.failedCount > 0 ? 'alert-warning' : 'alert-success'}`}>
                                 Assigned {bulkStudentResult.assignedCount} student(s). Failed {bulkStudentResult.failedCount}.
                               </div>
                               {bulkStudentResult.errors?.length > 0 && (
-                                <div style={{ border: '1px solid #fcd34d', background: '#fffbeb', borderRadius: 12, padding: 12 }}>
-                                  <strong style={{ display: 'block', marginBottom: 8 }}>Assignment Issues</strong>
-                                  <div style={{ display: 'grid', gap: 6 }}>
-                                    {bulkStudentResult.errors.map((rowError, index) => (
-                                      <div key={`${rowError.row}-${rowError.enrollmentNo || 'student'}-${index}`} className="small">
-                                        Row {rowError.row}{rowError.enrollmentNo ? ` (${rowError.enrollmentNo})` : ''}: {rowError.message}
-                                      </div>
-                                    ))}
-                                  </div>
+                                <div className="preview-panel" style={{ marginTop: 6 }}>
+                                  <strong style={{ display: 'block', marginBottom: 4, fontSize: '0.82rem' }}>Issues</strong>
+                                  {bulkStudentResult.errors.map((rowError, index) => (
+                                    <div key={`${rowError.row}-${rowError.enrollmentNo || 'student'}-${index}`} className="small">
+                                      Row {rowError.row}{rowError.enrollmentNo ? ` (${rowError.enrollmentNo})` : ''}: {rowError.message}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>
@@ -1274,109 +1203,96 @@ export default function AdminClasses() {
                         </div>
                       </div>
 
-                      <div style={{ display: 'grid', gap: 16 }}>
-                        <h4 style={{ margin: 0 }}>Lab Batch Operations</h4>
+                      {/* â”€â”€ Lab Batch Operations â”€â”€ */}
+                      <div className="accordion-section">
+                        <h4 className="accordion-section-title">Lab Batches</h4>
 
-                        <div style={{ display: 'grid', gap: 12 }}>
-                          <h5 style={{ margin: 0 }}>Create Lab Batch</h5>
-                          <form onSubmit={handleCreateLabBatch}>
-                            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-                              <div className="form-group">
-                                <label>Lab Batch Name</label>
-                                <input value={labBatchForm.name} onChange={(event) => setLabBatchForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="e.g., Batch A" required />
-                              </div>
-                              <div className="form-group">
-                                <label>Batch Capacity</label>
-                                <input type="number" min="1" value={labBatchForm.capacity} onChange={(event) => setLabBatchForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
-                              </div>
+                        {/* Create Lab Batch */}
+                        <form onSubmit={handleCreateLabBatch} style={{ marginBottom: 16 }}>
+                          <div className="form-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                            <div className="form-group">
+                              <label className="mit-label">Batch Name</label>
+                              <input value={labBatchForm.name} onChange={(event) => setLabBatchForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="e.g., Batch A" required />
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                              <button type="submit" disabled={creatingLabBatch}>{creatingLabBatch ? 'Creating...' : 'Create Lab Batch'}</button>
+                            <div className="form-group">
+                              <label className="mit-label">Capacity</label>
+                              <input type="number" min="1" value={labBatchForm.capacity} onChange={(event) => setLabBatchForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
                             </div>
-                          </form>
-                        </div>
+                          </div>
+                          <div className="form-actions">
+                            <button type="submit" className="btn-purple" style={{ padding: '6px 14px', fontSize: '0.78rem' }} disabled={creatingLabBatch}>{creatingLabBatch ? 'Creating…' : 'Create Lab Batch'}</button>
+                          </div>
+                        </form>
 
-                        <div style={{ display: 'grid', gap: 12 }}>
-                          <h5 style={{ margin: 0 }}>Edit Existing Lab Batches</h5>
-                          {!academicClass.labBatches.length && <p className="text-muted" style={{ margin: 0 }}>Create a lab batch to edit or delete it.</p>}
-                          {academicClass.labBatches.length > 0 && (
-                            <>
-                              <div style={{ display: 'grid', gap: 12 }}>
-                                {academicClass.labBatches.map((labBatch) => {
-                                  const isSelectedLabBatch = selectedLabBatch?._id === labBatch._id;
-                                  return (
-                                    <button
-                                      key={labBatch._id}
-                                      type="button"
-                                      className={isSelectedLabBatch ? '' : 'button-secondary'}
-                                      onClick={() => setSelectedLabBatchId(labBatch._id)}
-                                      style={{ textAlign: 'left', padding: 12, borderRadius: 10 }}
-                                    >
-                                      <strong style={{ display: 'block' }}>{labBatch.name}</strong>
-                                      <div className="small">Students: {labBatch.studentCount} / {labBatch.capacity}</div>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-
-                              {selectedLabBatch && (
-                                <form onSubmit={handleUpdateSelectedLabBatch}>
-                                  <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-                                    <div className="form-group">
-                                      <label>Lab Batch Name</label>
-                                      <input value={labBatchEditForm.name} onChange={(event) => setLabBatchEditForm((prev) => ({ ...prev, name: event.target.value }))} required />
-                                    </div>
-                                    <div className="form-group">
-                                      <label>Batch Capacity</label>
-                                      <input type="number" min="1" value={labBatchEditForm.capacity} onChange={(event) => setLabBatchEditForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
-                                    </div>
-                                  </div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-                                    <button type="button" className="button-secondary" onClick={handleDeleteSelectedLabBatch} disabled={deletingSelectedLabBatch || updatingSelectedLabBatch}>
-                                      {deletingSelectedLabBatch ? 'Deleting...' : 'Delete Lab Batch'}
-                                    </button>
-                                    <button type="submit" disabled={updatingSelectedLabBatch || deletingSelectedLabBatch}>
-                                      {updatingSelectedLabBatch ? 'Saving...' : 'Save Lab Batch Changes'}
-                                    </button>
-                                  </div>
-                                </form>
-                              )}
-                            </>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'grid', gap: 12 }}>
-                          <h5 style={{ margin: 0 }}>Assign Students To Lab Batches</h5>
-                          <p className="text-muted" style={{ margin: 0 }}>Students must already belong to {academicClass.name}. Choosing a different lab batch moves the selected students there. Leave the lab batch blank to remove them from lab groups.</p>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                            <select value={labBatchAssignmentName} onChange={(event) => setLabBatchAssignmentName(event.target.value)}>
-                              <option value="">Remove from lab batch</option>
+                        {/* Edit Existing Lab Batches */}
+                        {!academicClass.labBatches.length && <p className="small" style={{ margin: 0 }}>No lab batches yet.</p>}
+                        {academicClass.labBatches.length > 0 && (
+                          <>
+                            <div className="role-tabs" style={{ marginBottom: 12 }}>
                               {academicClass.labBatches.map((labBatch) => (
-                                <option key={labBatch._id} value={labBatch.name}>{labBatch.name} ({labBatch.studentCount}/{labBatch.capacity})</option>
+                                <button key={labBatch._id} type="button" className={`role-tab${selectedLabBatch?._id === labBatch._id ? ' active' : ''}`} onClick={() => setSelectedLabBatchId(labBatch._id)}>
+                                  {labBatch.name} ({labBatch.studentCount}/{labBatch.capacity})
+                                </button>
                               ))}
-                            </select>
-                            <button type="button" className="button-secondary" onClick={() => setLabStudentSelection(visibleStudentsForSelectedClass.map((student) => student._id))}>Select Visible</button>
-                            <button type="button" className="button-secondary" onClick={() => setLabStudentSelection([])}>Clear Selection</button>
-                            <div className="small">Selected: <strong>{labStudentSelection.length}</strong></div>
-                          </div>
-                          <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 8, padding: 8 }}>
-                            {visibleStudentsForSelectedClass.map((student) => (
-                              <label key={student._id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 8px', borderBottom: '1px solid #f1f5f9' }}>
-                                <input type="checkbox" checked={labStudentSelection.includes(student._id)} onChange={() => toggleSelection(labStudentSelection, setLabStudentSelection, student._id)} />
-                                <div>
-                                  <div style={{ fontWeight: 600 }}>{student.name}</div>
-                                  <div className="small">{student.email} | {student.enrollmentNo || 'No enrollment number'}</div>
-                                  <div className="small">Current Lab Batch: {student.labBatch || 'Not assigned'}</div>
+                            </div>
+
+                            {selectedLabBatch && (
+                              <form onSubmit={handleUpdateSelectedLabBatch} style={{ marginBottom: 16 }}>
+                                <div className="form-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                                  <div className="form-group">
+                                    <label className="mit-label">Batch Name</label>
+                                    <input value={labBatchEditForm.name} onChange={(event) => setLabBatchEditForm((prev) => ({ ...prev, name: event.target.value }))} required />
+                                  </div>
+                                  <div className="form-group">
+                                    <label className="mit-label">Capacity</label>
+                                    <input type="number" min="1" value={labBatchEditForm.capacity} onChange={(event) => setLabBatchEditForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
+                                  </div>
                                 </div>
-                              </label>
-                            ))}
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={() => handleAssignLabBatch(labBatchAssignmentName)} disabled={assigningLabBatch || labStudentSelection.length === 0}>
-                              {assigningLabBatch ? 'Saving...' : (labBatchAssignmentName ? `Assign Selected To ${labBatchAssignmentName}` : 'Remove Selected From Lab Batch')}
-                            </button>
-                          </div>
-                        </div>
+                                <div className="form-actions form-actions-spread">
+                                  <button type="button" className="btn-danger-outline" style={{ padding: '5px 12px', fontSize: '0.72rem' }} onClick={handleDeleteSelectedLabBatch} disabled={deletingSelectedLabBatch || updatingSelectedLabBatch}>
+                                    {deletingSelectedLabBatch ? 'Deleting…' : 'Delete Batch'}
+                                  </button>
+                                  <button type="submit" className="btn-purple" style={{ padding: '5px 12px', fontSize: '0.72rem' }} disabled={updatingSelectedLabBatch || deletingSelectedLabBatch}>
+                                    {updatingSelectedLabBatch ? 'Saving…' : 'Save Changes'}
+                                  </button>
+                                </div>
+                              </form>
+                            )}
+
+                            {/* Assign Students to Lab Batch */}
+                            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(106,13,173,0.06)' }}>
+                              <h5 className="accordion-section-title" style={{ marginBottom: 8 }}>Assign to Lab Batch</h5>
+                              <p className="small" style={{ margin: '0 0 8px' }}>Students must already belong to {academicClass.name}.</p>
+                              <div className="inline-toolbar" style={{ marginBottom: 8 }}>
+                                <select value={labBatchAssignmentName} onChange={(event) => setLabBatchAssignmentName(event.target.value)} style={{ maxWidth: 220 }}>
+                                  <option value="">Remove from lab batch</option>
+                                  {academicClass.labBatches.map((labBatch) => (
+                                    <option key={labBatch._id} value={labBatch.name}>{labBatch.name} ({labBatch.studentCount}/{labBatch.capacity})</option>
+                                  ))}
+                                </select>
+                                <button type="button" className="btn-outline" style={{ padding: '5px 10px', fontSize: '0.72rem' }} onClick={() => setLabStudentSelection(visibleStudentsForSelectedClass.map((s) => s._id))}>Select All</button>
+                                <button type="button" className="btn-outline" style={{ padding: '5px 10px', fontSize: '0.72rem' }} onClick={() => setLabStudentSelection([])}>Clear</button>
+                                <span className="badge badge-primary">{labStudentSelection.length}</span>
+                              </div>
+                              <div className="student-checklist">
+                                {visibleStudentsForSelectedClass.map((student) => (
+                                  <label key={student._id} className="student-checklist-item">
+                                    <input type="checkbox" checked={labStudentSelection.includes(student._id)} onChange={() => toggleSelection(labStudentSelection, setLabStudentSelection, student._id)} />
+                                    <div>
+                                      <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{student.name}</div>
+                                      <div className="small">{student.enrollmentNo || '—'} · Lab: {student.labBatch || 'None'}</div>
+                                    </div>
+                                  </label>
+                                ))}
+                              </div>
+                              <div className="form-actions">
+                                <button type="button" className="btn-purple" onClick={() => handleAssignLabBatch(labBatchAssignmentName)} disabled={assigningLabBatch || labStudentSelection.length === 0}>
+                                  {assigningLabBatch ? 'Saving…' : (labBatchAssignmentName ? `Assign to ${labBatchAssignmentName}` : 'Remove from Lab Batch')}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1384,9 +1300,54 @@ export default function AdminClasses() {
               );
             })}
             </div>
-          </>
+          </div>
         )}
       </div>
+
+      {/* â”€â”€ Create Class Modal â”€â”€ */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Create Theory Class</h2>
+              <button type="button" className="modal-close" onClick={() => setShowCreateModal(false)}>×</button>
+            </div>
+            <div className="modal-rainbow" />
+            <div className="modal-body">
+              <form onSubmit={handleCreateClass}>
+                <div className="form-group">
+                  <label className="mit-label">Class Name</label>
+                  <input value={classForm.name} onChange={(event) => setClassForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="e.g., TY-AIA-9" required />
+                </div>
+                <div className="form-row" style={{ marginTop: 8 }}>
+                  <div className="form-group">
+                    <label className="mit-label">Year</label>
+                    <select value={classForm.year} onChange={(event) => setClassForm((prev) => ({ ...prev, year: Number(event.target.value) }))}>
+                      {YEAR_OPTIONS.map((year) => <option key={year} value={year}>Year {year}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="mit-label">Course</label>
+                    <input value={classForm.course} onChange={(event) => setClassForm((prev) => ({ ...prev, course: event.target.value.toUpperCase() }))} placeholder="e.g., CSE" required />
+                  </div>
+                  <div className="form-group">
+                    <label className="mit-label">Capacity</label>
+                    <input type="number" min="1" value={classForm.capacity} onChange={(event) => setClassForm((prev) => ({ ...prev, capacity: Number(event.target.value) }))} required />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginTop: 8 }}>
+                  <label className="mit-label">Description</label>
+                  <input value={classForm.description} onChange={(event) => setClassForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Optional note about the class" />
+                </div>
+                <div className="form-actions" style={{ marginTop: 20 }}>
+                  <button type="button" className="btn-outline" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                  <button type="submit" className="btn-cta" disabled={savingClass}>{savingClass ? 'Creating…' : 'Create Class'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
