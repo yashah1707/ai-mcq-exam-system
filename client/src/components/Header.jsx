@@ -57,10 +57,6 @@ export default function Header() {
               alt="MIT-ADT University"
               style={styles.logoImg}
             />
-            <div style={styles.brandText}>
-              <span style={styles.brandName}>MIT-ADT UNIVERSITY</span>
-              <span style={styles.brandSub}>EXAM PORTAL</span>
-            </div>
           </div>
 
           {/* ── Nav Links ── */}
@@ -171,7 +167,7 @@ function ProfileCircleIcon() {
   );
 }
 
-const NAV_HEIGHT = 76; // px — single source of truth
+const NAV_HEIGHT = 70; // px — single source of truth
 
 const styles = {
   header: {
@@ -179,7 +175,7 @@ const styles = {
     color: '#fff',
     padding: 0,
     boxShadow: '0 2px 16px rgba(75,0,130,0.22)',
-    position: 'sticky',
+    position: 'static',
     top: 0,
     zIndex: 200,
   },
@@ -199,13 +195,15 @@ const styles = {
     gap: '10px',
     flexShrink: 0,
     textDecoration: 'none',
+    marginRight: '40px', // Compensate for scaling
   },
   logoImg: {
-    height: '52px',
-    width: 'auto',
+    width: '240px',
+    height: 'auto',
     objectFit: 'contain',
     display: 'block',
-    filter: 'brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.6))',
+    transform: 'scale(1.15)',
+    transformOrigin: 'left center',
   },
   brandText: {
     display: 'flex',
